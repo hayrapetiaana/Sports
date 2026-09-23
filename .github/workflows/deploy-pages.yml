@@ -1,73 +1,67 @@
-# Deploy the static dashboard (static/) to GitHub Pages.
+# Build the FastAPI dashboard (main.py) as a Docker image and publish it to
+# GitHub Container Registry (GHCR) on every push to main.
 #
-# NOTE: GitHub Pages is STATIC hosting only — it cannot run the FastAPI backend
-# (main.py) or the scrapers. This workflow deploys just the frontend. The API
-# that index.html depends on (/api/*) must be hosted separately (Render, Railway,
-# Fly.io, a VPS, etc.). Set the API_BASE_URL secret to its public URL; if unset,
-# the frontend keeps using same-origin /api/* paths.
+# Why not GitHub Pages: Pages only serves static files — it cannot run the
+# FastAPI backend or scrapers. This workflow produces an image you can run on
+# ANY host (Render, Railway, Fly.io, a VPS) to get the same behavior as
+# `uvicorn main:app` on localhost:8000.
 #
-# Reference structure: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
+# To get a live URL with zero extra config, connect this repo to Render once
+# (dashboard) — render.yaml auto-deploys on every push. No workflow needed for
+# that path; this workflow mirrors the same image to GHCR as a backup/portable
+# artifact.
 
-name: Deploy Dashboard to GitHub Pages
+name: Build + Publish Dashboard Image
 
 on:
   push:
     branches: [main]
   pull_request:
-  # Manual trigger from the Actions tab.
   workflow_dispatch:
 
-# One deployment at a time; do not cancel an in-progress deploy.
 concurrency:
-  group: "pages"
+  group: "docker"
   cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}:latest
 
 jobs:
   build:
-    name: Build static site
+    name: Build and push Docker image
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write   # push to GHCR
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Inject API base URL
-        shell: bash
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+      - name: Summary
+        if: github.event_name != 'pull_request'
         run: |
-          # If API_BASE_URL is set, rewrite the frontend's API calls to the
-          # hosted backend. Backslash-injected \n would otherwise be real here,
-          # so keep the sed literal.
-          if [ -n "$API_BASE_URL" ]; then
-            sed -i "s|/api/|$API_BASE_URL/api/|g" static/index.html
-            sed -i "s|/api/|$API_BASE_URL/api/|g" static/esports.html
-          fi
-        env:
-          API_BASE_URL: ${{ secrets.API_BASE_URL }}
-
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v4.0.0
-        with:
-          path: static
-          name: web-build-artifact
-          retention-days: 20
-
-  deploy:
-    name: Deploy to GitHub Pages
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4.0.5
-        with:
-          artifact_name: web-build-artifact
+          echo "Image published: ghcr.io/${{ github.repository }}:latest"
+          echo "Run it anywhere with:"
+          echo "  docker pull ghcr.io/${{ github.repository }}:latest"
+          echo "  docker run -p 8000:8000 ghcr.io/${{ github.repository }}:latest"
