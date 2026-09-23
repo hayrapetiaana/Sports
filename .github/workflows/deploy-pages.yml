@@ -1,0 +1,73 @@
+# Deploy the static dashboard (static/) to GitHub Pages.
+#
+# NOTE: GitHub Pages is STATIC hosting only — it cannot run the FastAPI backend
+# (main.py) or the scrapers. This workflow deploys just the frontend. The API
+# that index.html depends on (/api/*) must be hosted separately (Render, Railway,
+# Fly.io, a VPS, etc.). Set the API_BASE_URL secret to its public URL; if unset,
+# the frontend keeps using same-origin /api/* paths.
+#
+# Reference structure: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
+
+name: Deploy Dashboard to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Manual trigger from the Actions tab.
+  workflow_dispatch:
+
+# One deployment at a time; do not cancel an in-progress deploy.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build static site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Inject API base URL
+        shell: bash
+        run: |
+          # If API_BASE_URL is set, rewrite the frontend's API calls to the
+          # hosted backend. Backslash-injected \n would otherwise be real here,
+          # so keep the sed literal.
+          if [ -n "$API_BASE_URL" ]; then
+            sed -i "s|/api/|$API_BASE_URL/api/|g" static/index.html
+            sed -i "s|/api/|$API_BASE_URL/api/|g" static/esports.html
+          fi
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v4.0.0
+        with:
+          path: static
+          name: web-build-artifact
+          retention-days: 20
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4.0.5
+        with:
+          artifact_name: web-build-artifact
