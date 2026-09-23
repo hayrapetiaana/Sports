@@ -1,0 +1,40 @@
+[
+    {
+        "domain": "liquipedia.net",
+        "expirationDate": 1823663430,
+        "hostOnly": true,
+        "httpOnly": false,
+        "name": "_pk_id.1.4442",
+        "path": "/",
+        "sameSite": "lax",
+        "secure": false,
+        "session": false,
+        "storeId": null,
+        "value": "1bed11c617083dbd.1789708230."
+    },
+    {
+        "domain": "liquipedia.net",
+        "expirationDate": 1789710030,
+        "hostOnly": true,
+        "httpOnly": false,
+        "name": "_pk_ses.1.4442",
+        "path": "/",
+        "sameSite": "lax",
+        "secure": false,
+        "session": false,
+        "storeId": null,
+        "value": "1"
+    },
+    {
+        "domain": "liquipedia.net",
+        "hostOnly": true,
+        "httpOnly": true,
+        "name": "CI",
+        "path": "/",
+        "sameSite": "lax",
+        "secure": true,
+        "session": true,
+        "storeId": null,
+        "value": "214293009"
+    }
+]
