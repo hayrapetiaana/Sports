@@ -1,0 +1,2888 @@
+import os
+
+# Build the complete updated static/index.html
+frontend_code = r'''<!DOCTYPE html>
+<html lang="ru" class="dark h-full bg-[#050811] text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TT Multi-Monitor — Setka Cup, TT Cup, League Pro & Liga Pro</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              900: '#064e3b',
+            },
+            purplebrand: {
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea',
+              900: '#581c87',
+            },
+            rosebrand: {
+              400: '#fb7185',
+              500: '#f43f5e',
+              600: '#e11d48',
+              900: '#881337',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+          },
+          animation: {
+            'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            pulseGlow: {
+              '0%, 100%': { opacity: '1', filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))' },
+              '50%': { opacity: '0.6', filter: 'drop-shadow(0 0 2px rgba(16, 185, 129, 0.2))' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #080c14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    /* Glassmorphism effects */
+    .glass-panel {
+      background: rgba(13, 19, 33, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .glass-card:hover {
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    /* Live animation */
+    @keyframes liveRing {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .live-dot {
+      animation: liveRing 1.8s infinite;
+    }
+  </style>
+</head>
+<body class="min-h-full flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- TOP APP BAR -->
+  <header class="sticky top-0 z-40 bg-[#080c14]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
+    <div class="w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6">
+      <div class="flex items-center justify-between h-16 gap-2">
+        
+        <!-- Logo & Branding -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-blue-500 flex items-center justify-center shadow-lg shadow-emerald-950/60 p-0.5">
+            <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+              <i data-lucide="table-tennis" class="w-5 h-5 text-emerald-400"></i>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5" id="app-main-title">
+                <span>TT<span class="text-emerald-400">PARSER</span></span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-medium">4-IN-1</span>
+              </h1>
+            </div>
+            <p class="text-[11px] text-slate-400 hidden sm:block" id="app-main-subtitle">Setka Cup • TT Cup • League Pro • Liga Pro</p>
+          </div>
+        </div>
+
+        <!-- Platform Switcher Tabs (Unified 4-in-1, Setka Cup, TT Cup, League Pro, Sport-Liga Pro) -->
+        <div class="flex items-center p-1 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-inner mx-0.5 flex-nowrap shrink-0">
+          <button 
+            id="tab-btn-unified" 
+            onclick="switchPlatform('unified')" 
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-900/40 transition-all duration-200 whitespace-nowrap"
+          >
+            <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-200"></i>
+            <span>All 4 Resources</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-900/50 text-amber-200 font-mono font-bold" id="unified-badge-count">0</span>
+          </button>
+          <button 
+            id="tab-btn-setkacup" 
+            onclick="switchPlatform('setkacup')" 
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all duration-200 whitespace-nowrap"
+          >
+            <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Setka Cup</span>
+          </button>
+          <button 
+            id="tab-btn-ttcup" 
+            onclick="switchPlatform('ttcup')" 
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all duration-200 whitespace-nowrap"
+          >
+            <i data-lucide="trophy" class="w-3.5 h-3.5 text-blue-400"></i>
+            <span>TT Cup</span>
+          </button>
+          <button 
+            id="tab-btn-leaguepro" 
+            onclick="switchPlatform('leaguepro')" 
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all duration-200 whitespace-nowrap"
+          >
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-purple-400"></i>
+            <span>League Pro</span>
+          </button>
+          <button
+              id="tab-btn-sportliga"
+              onclick="switchPlatform('sportliga')"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-xs transition-all duration-200 text-slate-400 hover:text-white"
+            >
+              <i data-lucide="target" class="w-3.5 h-3.5 text-rose-400"></i>
+              <span>Liga Pro</span>
+            </button>
+        </div>
+
+        <!-- Timezone & Auto-Refresh Header Controls -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          
+          <!-- Timezone Selector -->
+          <div class="flex items-center gap-1.5 bg-slate-900/80 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs">
+            <i data-lucide="globe" class="w-4 h-4 text-emerald-400"></i>
+            <span class="text-slate-400 hidden xl:inline">UTC:</span>
+            <select id="timezone-select" onchange="changeTimezone(this.value)" class="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer font-mono text-xs">
+              <option value="local" class="bg-slate-900">Local (Auto)</option>
+              <option value="UTC-10" class="bg-slate-900">UTC-10</option>
+              <option value="UTC-8" class="bg-slate-900">UTC-8</option>
+              <option value="UTC-5" class="bg-slate-900">UTC-5</option>
+              <option value="UTC-4" class="bg-slate-900">UTC-4</option>
+              <option value="UTC-3" class="bg-slate-900">UTC-3</option>
+              <option value="UTC" class="bg-slate-900">UTC+0</option>
+              <option value="UTC+1" class="bg-slate-900">UTC+1</option>
+              <option value="UTC+2" class="bg-slate-900">UTC+2</option>
+              <option value="UTC+3" class="bg-slate-900" selected>UTC+3</option>
+              <option value="UTC+4" class="bg-slate-900">UTC+4</option>
+              <option value="UTC+5" class="bg-slate-900">UTC+5</option>
+              <option value="UTC+6" class="bg-slate-900">UTC+6</option>
+              <option value="UTC+7" class="bg-slate-900">UTC+7</option>
+              <option value="UTC+8" class="bg-slate-900">UTC+8</option>
+              <option value="UTC+9" class="bg-slate-900">UTC+9</option>
+              <option value="UTC+10" class="bg-slate-900">UTC+10</option>
+              <option value="UTC+12" class="bg-slate-900">UTC+12</option>
+            </select>
+          </div>
+
+          <!-- Auto Refresh Interval Dropdown -->
+          <div class="hidden sm:flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs">
+            <i data-lucide="timer" class="w-4 h-4 text-slate-400"></i>
+            <select id="refresh-interval-select" onchange="changeRefreshInterval(this.value)" class="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer">
+              <option value="15" class="bg-slate-900">15s</option>
+              <option value="30" selected class="bg-slate-900">30s</option>
+              <option value="60" class="bg-slate-900">60s</option>
+              <option value="0" class="bg-slate-900">Manual</option>
+            </select>
+            <!-- Circular countdown badge -->
+            <div id="countdown-badge" class="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center font-mono text-[10px] text-emerald-400 font-bold">
+              30
+            </div>
+          </div>
+
+          <!-- Cookie TT Cup Button -->
+          <button
+            id="header-cookie-btn"
+            onclick="openTTCupCookieModal()"
+            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-medium transition-colors"
+            title="Настройка Cookie TT Cup для обхода защиты"
+          >
+            <i data-lucide="cookie" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span class="hidden lg:inline">Cookie TT Cup</span>
+            <span id="header-cookie-dot" class="w-2 h-2 rounded-full bg-slate-500" title="Статус Cookie"></span>
+          </button>
+
+          <!-- Manual Refresh Button -->
+          <button 
+            id="refresh-btn" 
+            onclick="triggerManualRefresh()" 
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-medium transition-colors"
+            title="Обновить данные"
+          >
+            <i data-lucide="rotate-cw" id="refresh-icon" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span class="hidden md:inline">Обновить</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 py-4 space-y-6">
+
+    <!-- ======================================================================= -->
+    <!-- SECTION 1: UNIFIED 4-IN-1 VIEW -->
+    <!-- ======================================================================= -->
+    <div id="section-unified" class="space-y-6"><!-- Compact Platform Breakdown & Quick Links -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 border border-slate-800/80 rounded-2xl p-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+            <i data-lucide="layers" class="w-3 h-3"></i> 4 Платформы
+          </span>
+          <span class="text-xs text-slate-400 font-medium">Агрегатор турниров и матчей в реальном времени</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-1.5 font-mono whitespace-nowrap">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
+            <span>Setka:</span>
+            <strong id="stat-unified-setka" class="text-white font-bold">0</strong>
+          </div>
+          <div class="px-2.5 py-1 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-300 text-xs flex items-center gap-1.5 font-mono whitespace-nowrap">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span>
+            <span>TT Cup:</span>
+            <strong id="stat-unified-ttcup" class="text-white font-bold">0</strong>
+          </div>
+          <div class="px-2.5 py-1 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs flex items-center gap-1.5 font-mono whitespace-nowrap">
+            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0"></span>
+            <span>League Pro:</span>
+            <strong id="stat-unified-leaguepro" class="text-white font-bold">0</strong>
+          </div>
+          <div class="px-2.5 py-1 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-1.5 font-mono whitespace-nowrap">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-400 flex-shrink-0"></span>
+            <span>Liga Pro:</span>
+            <strong id="stat-unified-sportliga" class="text-white font-bold">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI STATS BAR -->
+      <section class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Всего матчей</p>
+            <h3 id="stat-unified-total" class="text-2xl font-bold text-white mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <i data-lucide="layers" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-emerald-900/40 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+          <div class="absolute inset-0 bg-emerald-500/5 pointer-events-none"></div>
+          <div>
+            <p class="text-xs uppercase font-semibold text-emerald-400 tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              Идут сейчас
+            </p>
+            <h3 id="stat-unified-live" class="text-2xl font-bold text-emerald-400 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <i data-lucide="radio" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-amber-400 tracking-wider">Ожидаются</p>
+            <h3 id="stat-unified-upcoming" class="text-2xl font-bold text-amber-400 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Завершенные</p>
+            <h3 id="stat-unified-finished" class="text-2xl font-bold text-slate-300 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-amber-500/30 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-amber-300/80 tracking-wider">Завершены ≤10м</p>
+            <h3 id="stat-unified-just-finished" class="text-2xl font-bold text-amber-400 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <i data-lucide="zap" class="w-5 h-5"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTROL FILTERS PANEL -->
+      <section class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+          
+          <!-- Date Range: From and To -->
+          <div class="lg:col-span-3 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center justify-between">
+              <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-400"></i> Период дат:</span>
+              <span class="flex items-center gap-1 text-[10px]">
+                <button onclick="setUnifiedQuickDate('today')" class="hover:text-amber-400 underline">Сегодня</button> •
+                <button onclick="setUnifiedQuickDate('tomorrow')" class="hover:text-amber-400 underline">Завтра</button> •
+                <button onclick="setUnifiedQuickDate('2days')" class="hover:text-amber-400 underline">2 дня</button>
+              </span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="date" id="unified-date-from" onchange="unifiedState.dateFrom=this.value; fetchUnifiedMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-2.5 py-2 text-xs text-white font-mono focus:outline-none" />
+              <span class="text-slate-500 text-xs">—</span>
+              <input type="date" id="unified-date-to" onchange="unifiedState.dateTo=this.value; fetchUnifiedMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-2.5 py-2 text-xs text-white font-mono focus:outline-none" />
+            </div>
+          </div>
+
+          <!-- Platform Filter Select -->
+          <div class="lg:col-span-3 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="filter" class="w-3.5 h-3.5 text-slate-400"></i>
+              Фильтр ресурса
+            </label>
+            <select id="unified-platform-filter" onchange="unifiedState.platform=this.value; fetchUnifiedMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+              <option value="all">🌟 Все 4 ресурса</option>
+              <option value="setka">🏓 Setka Cup</option>
+              <option value="ttcup">🏆 TT Cup</option>
+              <option value="league_pro">⚡ League Pro</option>
+              <option value="sport_liga">🎯 Liga Pro</option>
+            </select>
+          </div>
+
+          <!-- Timeframe Filter -->
+          <div class="lg:col-span-3 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center justify-between">
+              <span class="flex items-center gap-1.5"><i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i> Временной интервал:</span>
+              <button onclick="resetUnifiedTimeframe()" class="text-[10px] text-slate-500 hover:text-amber-400">Сброс</button>
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="time" id="unified-time-from" value="00:00" onchange="unifiedState.timeframeFrom=this.value; fetchUnifiedMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-2 py-1.5 text-xs text-white font-mono focus:outline-none" />
+              <span class="text-slate-500 text-xs">—</span>
+              <input type="time" id="unified-time-to" value="23:59" onchange="unifiedState.timeframeTo=this.value; fetchUnifiedMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-2 py-1.5 text-xs text-white font-mono focus:outline-none" />
+            </div>
+          </div>
+
+          <!-- Search Input -->
+          <div class="lg:col-span-3 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
+              Поиск игрока или турнира
+            </label>
+            <input type="text" id="unified-search-input" placeholder="Введите имя..." oninput="handleUnifiedSearch(this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
+          </div>
+        </div>
+
+        <!-- Secondary Controls: Status Tabs & View Mode -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+          <!-- Status Tabs -->
+          <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800/80 rounded-xl w-full sm:w-auto overflow-x-auto">
+            <button onclick="setUnifiedStatus('all')" id="unified-status-tab-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+              Все (<span id="unified-tab-count-all">0</span>)
+            </button>
+            <button onclick="setUnifiedStatus('live')" id="unified-status-tab-live" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1"></span>Live (<span id="unified-tab-count-live">0</span>)
+            </button>
+            <button onclick="setUnifiedStatus('upcoming')" id="unified-status-tab-upcoming" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              Ожидаются (<span id="unified-tab-count-upcoming">0</span>)
+            </button>
+            <button onclick="setUnifiedStatus('finished')" id="unified-status-tab-finished" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white whitespace-nowrap flex-shrink-0">
+              Завершенные (<span id="unified-tab-count-finished">0</span>)
+            </button>
+            <button onclick="setUnifiedStatus('just_finished')" id="unified-status-tab-just_finished" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-amber-300 hover:bg-slate-800/80 whitespace-nowrap flex-shrink-0 flex items-center gap-1 transition-all">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 animate-pulse"></span>
+              <span>Завершены ≤10 мин</span> (<span id="unified-tab-count-just-finished">0</span>)
+            </button>
+          </div>
+
+          <!-- View Mode Toggle (Cards vs Table) -->
+          <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl self-end sm:self-auto">
+            <button onclick="setUnifiedViewMode('cards')" id="unified-view-cards-btn" class="p-1.5 rounded-lg bg-amber-500/20 text-amber-300">
+              <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            </button>
+            <button onclick="setUnifiedViewMode('table')" id="unified-view-table-btn" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+              <i data-lucide="table" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- UNIFIED MATCHES VIEW -->
+      <section id="unified-matches-container">
+        <!-- Cards Grid View -->
+        <div id="unified-cards-wrapper" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+
+        <!-- Table View -->
+        <div id="unified-table-wrapper" class="hidden bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-950/80 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-800 font-mono">
+                <tr>
+                  <th class="p-3.5">Время</th>
+                  <th class="p-3.5">Ресурс</th>
+                  <th class="p-3.5">Страна</th>
+                  <th class="p-3.5">Турнир / Этап</th>
+                  <th class="p-3.5">Игроки</th>
+                  <th class="p-3.5 text-center">Счет</th>
+                  <th class="p-3.5">Сеты</th>
+                  <th class="p-3.5 text-right">Статус</th>
+                </tr>
+              </thead>
+              <tbody id="unified-table-body" class="divide-y divide-slate-800/60 font-sans"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="unified-empty-state" class="hidden text-center py-16 bg-slate-900/50 border border-slate-800 rounded-2xl p-8">
+          <i data-lucide="inbox" class="w-12 h-12 text-slate-600 mx-auto mb-3"></i>
+          <h4 class="text-base font-bold text-slate-300">Матчи не найдены</h4>
+          <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Попробуйте изменить дату, временной интервал или фильтр статуса.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- SECTION 2: SETKA CUP VIEW -->
+    <!-- ======================================================================= -->
+    <div id="section-setkacup" class="hidden space-y-6">
+
+      <!-- KPI STATS BAR -->
+      <section class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Всего матчей</p>
+            <h3 id="stat-total" class="text-2xl font-bold text-white mt-1 font-mono">--</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+            <i data-lucide="trophy" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-emerald-900/40 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+          <div class="absolute inset-0 bg-emerald-500/5 pointer-events-none"></div>
+          <div>
+            <p class="text-xs uppercase font-semibold text-emerald-400 tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              Идут сейчас
+            </p>
+            <h3 id="stat-live" class="text-2xl font-bold text-emerald-400 mt-1 font-mono">--</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 animate-pulse-glow">
+            <i data-lucide="radio" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-amber-400 tracking-wider">Ожидаются</p>
+            <h3 id="stat-upcoming" class="text-2xl font-bold text-amber-400 mt-1 font-mono">--</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Завершенные</p>
+            <h3 id="stat-finished" class="text-2xl font-bold text-slate-300 mt-1 font-mono">--</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTROL FILTERS PANEL -->
+      <section class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+          <div class="md:col-span-3 space-y-1.5">
+            <label for="date-input" class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i> Дата матчей
+            </label>
+            <input type="date" id="date-input" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-sm text-white font-mono focus:outline-none" />
+          </div>
+
+          <div class="md:col-span-5 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center justify-between">
+              <span class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i> Залы (Корты)</span>
+              <button onclick="resetHallsFilter()" class="text-[10px] text-emerald-400 hover:underline">Все залы</button>
+            </label>
+            <div id="halls-pills-container" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-1 bg-slate-950 border border-slate-800 rounded-xl"></div>
+          </div>
+
+          <div class="md:col-span-4 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="sun-medium" class="w-3.5 h-3.5 text-slate-400"></i> Время суток (Период)
+            </label>
+            <select id="period-select" onchange="setPeriodFilter(this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+              <option value="all">Все периоды (сутки)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+          <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl w-full sm:w-auto overflow-x-auto">
+            <button onclick="setStatusTab('all')" id="status-tab-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              Все (<span id="tab-count-all">0</span>)
+            </button>
+            <button onclick="setStatusTab('live')" id="status-tab-live" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1"></span>Live (<span id="tab-count-live">0</span>)
+            </button>
+            <button onclick="setStatusTab('upcoming')" id="status-tab-upcoming" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              Ожидаются (<span id="tab-count-upcoming">0</span>)
+            </button>
+            <button onclick="setStatusTab('finished')" id="status-tab-finished" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              Завершенные (<span id="tab-count-finished">0</span>)
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <div class="relative flex-1 sm:w-64">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="search-input" placeholder="Поиск игрока..." class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none" />
+            </div>
+            <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+              <button onclick="setViewMode('cards')" id="view-cards-btn" class="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-300">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+              </button>
+              <button onclick="setViewMode('table')" id="view-table-btn" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+                <i data-lucide="table" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MATCHES CONTAINER -->
+      <section id="matches-container">
+        <div id="cards-wrapper" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+        <div id="table-wrapper" class="hidden bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-950/80 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-800 font-mono">
+                <tr>
+                  <th class="p-3.5">Время</th>
+                  <th class="p-3.5">Корт / Зал</th>
+                  <th class="p-3.5">Турнир / Этап</th>
+                  <th class="p-3.5">Игрок 1</th>
+                  <th class="p-3.5 text-center">Счет</th>
+                  <th class="p-3.5">Игрок 2</th>
+                  <th class="p-3.5">Сеты</th>
+                  <th class="p-3.5 text-right">Статус</th>
+                </tr>
+              </thead>
+              <tbody id="matches-table-body" class="divide-y divide-slate-800/60 font-sans"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- SECTION 3: TT CUP VIEW -->
+    <!-- ======================================================================= -->
+    <div id="section-ttcup" class="hidden space-y-6">
+
+      <!-- TT CUP BANNER & CHALLENGE ALERT -->
+      <div class="bg-gradient-to-r from-blue-950/70 via-slate-900 to-indigo-950/70 border border-blue-800/40 rounded-3xl p-5 shadow-2xl relative overflow-hidden">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 relative z-10">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/40 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="trophy" class="w-3.5 h-3.5"></i> ttcup.com
+              </span>
+              <span class="text-xs text-slate-400">Польша и Чехия</span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold text-white mt-1.5">Расписание турниров TT Cup</h2>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+              Парсинг расписаний залов Польши и Чехии с таблицами результатов и турнирной сеткой.
+            </p>
+          </div>
+
+          <!-- Quick stats & country filter & Cookie button -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center p-1 bg-slate-950/80 border border-slate-800 rounded-xl">
+              <button onclick="setTTCupCountry('all')" id="ttcup-country-all" class="px-3 py-1 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-300">Все страны</button>
+              <button onclick="setTTCupCountry('czech')" id="ttcup-country-czech" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5">
+                <svg class="w-3.5 h-2.5 rounded-sm" viewBox="0 0 640 480"><path fill="#d7141a" d="M0 0h640v480H0z"/><path fill="#fff" d="M0 0h640v240H0z"/><path fill="#11457e" d="M0 0l360 240L0 480z"/></svg>
+                Чехия
+              </button>
+              <button onclick="setTTCupCountry('poland')" id="ttcup-country-poland" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5">
+                <svg class="w-3.5 h-2.5 rounded-sm" viewBox="0 0 640 480"><path fill="#dc143c" d="M0 240h640v240H0z"/><path fill="#fff" d="M0 0h640v240H0z"/></svg>
+                Польша
+              </button>
+            </div>
+            <button onclick="openTTCupCookieModal()" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/25 flex items-center gap-1.5 transition-all shadow-sm">
+              <i data-lucide="cookie" class="w-3.5 h-3.5 text-amber-400"></i>
+              <span>Cookie TT Cup</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI STATS BAR -->
+      <section class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Всего матчей</p>
+            <h3 id="stat-ttcup-total" class="text-2xl font-bold text-white mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+            <i data-lucide="trophy" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-emerald-900/40 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+          <div class="absolute inset-0 bg-emerald-500/5 pointer-events-none"></div>
+          <div>
+            <p class="text-xs uppercase font-semibold text-emerald-400 tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Live
+            </p>
+            <h3 id="stat-ttcup-live" class="text-2xl font-bold text-emerald-400 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <i data-lucide="radio" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-amber-400 tracking-wider">Ожидаются</p>
+            <h3 id="stat-ttcup-upcoming" class="text-2xl font-bold text-amber-400 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Завершенные</p>
+            <h3 id="stat-ttcup-finished" class="text-2xl font-bold text-slate-300 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTROL FILTERS PANEL -->
+      <section class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+          <div class="lg:col-span-3 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-400"></i> Дата расписания
+            </label>
+            <input type="date" id="ttcup-date-input" onchange="setTTCupDate(this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none" />
+          </div>
+
+          <div class="lg:col-span-4 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i> Выбор зала / турнира
+            </label>
+            <select id="ttcup-hall-select" onchange="setTTCupHallFilter(this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+              <option value="all">Все доступные залы</option>
+            </select>
+          </div>
+
+          <div class="lg:col-span-3 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center justify-between">
+              <span class="flex items-center gap-1.5"><i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i> Интервал:</span>
+              <button onclick="resetTTCupTimeframe()" class="text-[10px] text-slate-500 hover:text-blue-400">Сброс</button>
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="time" id="ttcup-time-from" value="00:00" onchange="ttcupState.timeframeFrom=this.value; renderTTCup();" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-2 py-1.5 text-xs text-white font-mono focus:outline-none" />
+              <span class="text-slate-500 text-xs">—</span>
+              <input type="time" id="ttcup-time-to" value="23:59" onchange="ttcupState.timeframeTo=this.value; renderTTCup();" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-2 py-1.5 text-xs text-white font-mono focus:outline-none" />
+            </div>
+          </div>
+
+          <div class="lg:col-span-2 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i> Поиск
+            </label>
+            <input type="text" id="ttcup-search-input" placeholder="Игрок..." oninput="handleTTCupSearch(this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+          <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl w-full sm:w-auto overflow-x-auto">
+            <button onclick="setTTCupStatusTab('all')" id="ttcup-status-tab-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/40">
+              Все (<span id="ttcup-tab-count-all">0</span>)
+            </button>
+            <button onclick="setTTCupStatusTab('live')" id="ttcup-status-tab-live" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              Live (<span id="ttcup-tab-count-live">0</span>)
+            </button>
+            <button onclick="setTTCupStatusTab('upcoming')" id="ttcup-status-tab-upcoming" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              Ожидаются (<span id="ttcup-tab-count-upcoming">0</span>)
+            </button>
+            <button onclick="setTTCupStatusTab('finished')" id="ttcup-status-tab-finished" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              Завершенные (<span id="ttcup-tab-count-finished">0</span>)
+            </button>
+          </div>
+
+          <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+            <button onclick="setTTCupViewMode('cards')" id="ttcup-view-cards-btn" class="p-1.5 rounded-lg bg-blue-500/20 text-blue-300">
+              <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            </button>
+            <button onclick="setTTCupViewMode('table')" id="ttcup-view-table-btn" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+              <i data-lucide="table" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TT CUP MATCHES CONTAINER -->
+      <section id="ttcup-matches-container">
+        <div id="ttcup-cards-wrapper" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+        <div id="ttcup-table-wrapper" class="hidden bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-950/80 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-800 font-mono">
+                <tr>
+                  <th class="p-3.5">Время</th>
+                  <th class="p-3.5">Страна</th>
+                  <th class="p-3.5">Зал / Турнир</th>
+                  <th class="p-3.5">Этап</th>
+                  <th class="p-3.5">Игроки</th>
+                  <th class="p-3.5 text-center">Счет</th>
+                  <th class="p-3.5">Сеты</th>
+                  <th class="p-3.5 text-right">Статус</th>
+                </tr>
+              </thead>
+              <tbody id="ttcup-matches-table-body" class="divide-y divide-slate-800/60 font-sans"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- SECTION 4: LEAGUE PRO VIEW -->
+    <!-- ======================================================================= -->
+    <div id="section-leaguepro" class="hidden space-y-6">
+
+      <!-- League Pro Banner -->
+      <div class="bg-gradient-to-r from-purple-950/60 via-slate-900 to-indigo-950/60 border border-purple-800/40 rounded-3xl p-5 shadow-2xl relative overflow-hidden">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 relative z-10">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="zap" class="w-3.5 h-3.5"></i> tt.league-pro.com
+              </span>
+              <span class="text-xs text-slate-400">Турниры Чехии и международные дивизионы</span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold text-white mt-1.5">League Pro Table Tennis</h2>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+              Парсинг всех турниров и матчей по страницам с рейтингами игроков, счетом по сетам и статусами.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-mono">
+              Турниров: <strong id="stat-leaguepro-tournaments" class="text-white font-bold">0</strong>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI STATS BAR -->
+      <section class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Всего матчей</p>
+            <h3 id="stat-leaguepro-total" class="text-2xl font-bold text-white mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+            <i data-lucide="zap" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-emerald-900/40 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+          <div class="absolute inset-0 bg-emerald-500/5 pointer-events-none"></div>
+          <div>
+            <p class="text-xs uppercase font-semibold text-emerald-400 tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Live
+            </p>
+            <h3 id="stat-leaguepro-live" class="text-2xl font-bold text-emerald-400 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <i data-lucide="radio" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-amber-400 tracking-wider">Ожидаются</p>
+            <h3 id="stat-leaguepro-upcoming" class="text-2xl font-bold text-amber-400 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Завершенные</p>
+            <h3 id="stat-leaguepro-finished" class="text-2xl font-bold text-slate-300 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTROL FILTERS PANEL -->
+      <section class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+          
+          <!-- Date Range -->
+          <div class="lg:col-span-3 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center justify-between">
+              <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5 text-purple-400"></i> Период дат:</span>
+              <span class="flex items-center gap-1 text-[10px]">
+                <button onclick="setLeagueProQuickDate('today')" class="hover:text-purple-400 underline">Сегодня</button> •
+                <button onclick="setLeagueProQuickDate('tomorrow')" class="hover:text-purple-400 underline">Завтра</button> •
+                <button onclick="setLeagueProQuickDate('2days')" class="hover:text-purple-400 underline">2 дня</button>
+              </span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="date" id="leaguepro-date-from" onchange="leagueProState.dateFrom=this.value; fetchLeagueProMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl px-2.5 py-2 text-xs text-white font-mono focus:outline-none" />
+              <span class="text-slate-500 text-xs">—</span>
+              <input type="date" id="leaguepro-date-to" onchange="leagueProState.dateTo=this.value; fetchLeagueProMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl px-2.5 py-2 text-xs text-white font-mono focus:outline-none" />
+            </div>
+          </div>
+
+          <!-- Tournament Select -->
+          <div class="lg:col-span-4 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="trophy" class="w-3.5 h-3.5 text-slate-400"></i> Турнир
+            </label>
+            <select id="leaguepro-tournament-select" onchange="setLeagueProTournamentFilter(this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+              <option value="all">Все турниры периода</option>
+            </select>
+          </div>
+
+          <!-- Timeframe Filter -->
+          <div class="lg:col-span-3 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center justify-between">
+              <span class="flex items-center gap-1.5"><i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i> Время:</span>
+              <button onclick="resetLeagueProTimeframe()" class="text-[10px] text-slate-500 hover:text-purple-400">Сброс</button>
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="time" id="leaguepro-time-from" value="00:00" onchange="leagueProState.timeframeFrom=this.value; fetchLeagueProMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl px-2 py-1.5 text-xs text-white font-mono focus:outline-none" />
+              <span class="text-slate-500 text-xs">—</span>
+              <input type="time" id="leaguepro-time-to" value="23:59" onchange="leagueProState.timeframeTo=this.value; fetchLeagueProMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl px-2 py-1.5 text-xs text-white font-mono focus:outline-none" />
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="lg:col-span-2 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i> Поиск
+            </label>
+            <input type="text" id="leaguepro-search-input" placeholder="Игрок..." oninput="handleLeagueProSearch(this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+          <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl w-full sm:w-auto overflow-x-auto">
+            <button onclick="setLeagueProStatusTab('all')" id="leaguepro-status-tab-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/40">
+              Все (<span id="leaguepro-tab-count-all">0</span>)
+            </button>
+            <button onclick="setLeagueProStatusTab('live')" id="leaguepro-status-tab-live" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              Live (<span id="leaguepro-tab-count-live">0</span>)
+            </button>
+            <button onclick="setLeagueProStatusTab('upcoming')" id="leaguepro-status-tab-upcoming" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              Ожидаются (<span id="leaguepro-tab-count-upcoming">0</span>)
+            </button>
+            <button onclick="setLeagueProStatusTab('finished')" id="leaguepro-status-tab-finished" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              Завершенные (<span id="leaguepro-tab-count-finished">0</span>)
+            </button>
+          </div>
+
+          <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+            <button onclick="setLeagueProViewMode('cards')" id="leaguepro-view-cards-btn" class="p-1.5 rounded-lg bg-purple-500/20 text-purple-300">
+              <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            </button>
+            <button onclick="setLeagueProViewMode('table')" id="leaguepro-view-table-btn" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+              <i data-lucide="table" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- LEAGUE PRO MATCHES CONTAINER -->
+      <section id="leaguepro-matches-container">
+        <div id="leaguepro-cards-wrapper" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+        <div id="leaguepro-table-wrapper" class="hidden bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-950/80 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-800 font-mono">
+                <tr>
+                  <th class="p-3.5">Время</th>
+                  <th class="p-3.5">Турнир</th>
+                  <th class="p-3.5">Этап</th>
+                  <th class="p-3.5">Игрок 1</th>
+                  <th class="p-3.5 text-center">Счет</th>
+                  <th class="p-3.5">Игрок 2</th>
+                  <th class="p-3.5">Сеты</th>
+                  <th class="p-3.5 text-right">Статус</th>
+                </tr>
+              </thead>
+              <tbody id="leaguepro-matches-table-body" class="divide-y divide-slate-800/60 font-sans"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- SECTION 5: SPORT-LIGA PRO VIEW -->
+    <!-- ======================================================================= -->
+    <div id="section-sportliga" class="hidden space-y-6">
+
+      <!-- Sport-Liga Banner -->
+      <div class="bg-gradient-to-r from-rose-950/60 via-slate-900 to-indigo-950/60 border border-rose-800/40 rounded-3xl p-5 shadow-2xl relative overflow-hidden">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 relative z-10">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="target" class="w-3.5 h-3.5"></i> sport-liga.pro
+              </span>
+              <span class="text-xs text-slate-400">Турниры Liga Pro Table Tennis</span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold text-white mt-1.5">Sport-Liga Pro Table Tennis</h2>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+              Парсинг расписаний всех дивизионов и кортов Sport-Liga Pro с поддержкой периодов дат и онлайн счетом.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono">
+              Турниров: <strong id="stat-sportliga-tournaments" class="text-white font-bold">0</strong>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI STATS BAR -->
+      <section class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Всего матчей</p>
+            <h3 id="stat-sportliga-total" class="text-2xl font-bold text-white mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+            <i data-lucide="target" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-emerald-900/40 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+          <div class="absolute inset-0 bg-emerald-500/5 pointer-events-none"></div>
+          <div>
+            <p class="text-xs uppercase font-semibold text-emerald-400 tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Live
+            </p>
+            <h3 id="stat-sportliga-live" class="text-2xl font-bold text-emerald-400 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <i data-lucide="radio" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-amber-400 tracking-wider">Ожидаются</p>
+            <h3 id="stat-sportliga-upcoming" class="text-2xl font-bold text-amber-400 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Завершенные</p>
+            <h3 id="stat-sportliga-finished" class="text-2xl font-bold text-slate-300 mt-1 font-mono">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTROL FILTERS PANEL -->
+      <section class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+          
+          <!-- Date Range -->
+          <div class="lg:col-span-3 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center justify-between">
+              <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5 text-rose-400"></i> Период дат:</span>
+              <span class="flex items-center gap-1 text-[10px]">
+                <button onclick="setSportLigaQuickDate('today')" class="hover:text-rose-400 underline">Сегодня</button> •
+                <button onclick="setSportLigaQuickDate('tomorrow')" class="hover:text-rose-400 underline">Завтра</button> •
+                <button onclick="setSportLigaQuickDate('2days')" class="hover:text-rose-400 underline">2 дня</button>
+              </span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="date" id="sportliga-date-from" onchange="sportLigaState.dateFrom=this.value; fetchSportLigaMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 rounded-xl px-2.5 py-2 text-xs text-white font-mono focus:outline-none" />
+              <span class="text-slate-500 text-xs">—</span>
+              <input type="date" id="sportliga-date-to" onchange="sportLigaState.dateTo=this.value; fetchSportLigaMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 rounded-xl px-2.5 py-2 text-xs text-white font-mono focus:outline-none" />
+            </div>
+          </div>
+
+          <!-- Tournament Select -->
+          <div class="lg:col-span-4 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="trophy" class="w-3.5 h-3.5 text-slate-400"></i> Турнир
+            </label>
+            <select id="sportliga-tournament-select" onchange="setSportLigaTournamentFilter(this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+              <option value="all">Все турниры периода</option>
+            </select>
+          </div>
+
+          <!-- Timeframe Filter -->
+          <div class="lg:col-span-3 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center justify-between">
+              <span class="flex items-center gap-1.5"><i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i> Время:</span>
+              <button onclick="resetSportLigaTimeframe()" class="text-[10px] text-slate-500 hover:text-rose-400">Сброс</button>
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="time" id="sportliga-time-from" value="00:00" onchange="sportLigaState.timeframeFrom=this.value; fetchSportLigaMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 rounded-xl px-2 py-1.5 text-xs text-white font-mono focus:outline-none" />
+              <span class="text-slate-500 text-xs">—</span>
+              <input type="time" id="sportliga-time-to" value="23:59" onchange="sportLigaState.timeframeTo=this.value; fetchSportLigaMatches();" class="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 rounded-xl px-2 py-1.5 text-xs text-white font-mono focus:outline-none" />
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="lg:col-span-2 space-y-1.5">
+            <label class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i> Поиск
+            </label>
+            <input type="text" id="sportliga-search-input" placeholder="Игрок..." oninput="handleSportLigaSearch(this.value)" class="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+          <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl w-full sm:w-auto overflow-x-auto">
+            <button onclick="setSportLigaStatusTab('all')" id="sportliga-status-tab-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+              Все (<span id="sportliga-tab-count-all">0</span>)
+            </button>
+            <button onclick="setSportLigaStatusTab('live')" id="sportliga-status-tab-live" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              Live (<span id="sportliga-tab-count-live">0</span>)
+            </button>
+            <button onclick="setSportLigaStatusTab('upcoming')" id="sportliga-status-tab-upcoming" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              Ожидаются (<span id="sportliga-tab-count-upcoming">0</span>)
+            </button>
+            <button onclick="setSportLigaStatusTab('finished')" id="sportliga-status-tab-finished" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+              Завершенные (<span id="sportliga-tab-count-finished">0</span>)
+            </button>
+          </div>
+
+          <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+            <button onclick="setSportLigaViewMode('cards')" id="sportliga-view-cards-btn" class="p-1.5 rounded-lg bg-rose-500/20 text-rose-300">
+              <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            </button>
+            <button onclick="setSportLigaViewMode('table')" id="sportliga-view-table-btn" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+              <i data-lucide="table" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SPORT LIGA MATCHES CONTAINER -->
+      <section id="sportliga-matches-container">
+        <div id="sportliga-cards-wrapper" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+        <div id="sportliga-table-wrapper" class="hidden bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-950/80 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-800 font-mono">
+                <tr>
+                  <th class="p-3.5">Время</th>
+                  <th class="p-3.5">Турнир</th>
+                  <th class="p-3.5">Этап</th>
+                  <th class="p-3.5">Игрок 1</th>
+                  <th class="p-3.5 text-center">Счет</th>
+                  <th class="p-3.5">Игрок 2</th>
+                  <th class="p-3.5">Сеты</th>
+                  <th class="p-3.5 text-right">Статус</th>
+                </tr>
+              </thead>
+              <tbody id="sportliga-matches-table-body" class="divide-y divide-slate-800/60 font-sans"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- STANDINGS MODAL -->
+  <div id="standings-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2" id="standings-modal-title">
+          <i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i>
+          Турнирная таблица
+        </h3>
+        <button onclick="closeStandingsModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="overflow-y-auto flex-1" id="standings-modal-content"></div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION CORE -->
+  <script>
+    // Global active platform
+    let currentPlatform = 'unified';
+
+    // Application state
+    const state = {
+      date: new Date().toISOString().split('T')[0],
+      halls: [],
+      period: 'all',
+      statusTab: 'all',
+      searchQuery: '',
+      viewMode: 'cards',
+      timeZone: localStorage.getItem('tt_timezone') || 'local',
+      timeframeFrom: '00:00',
+      timeframeTo: '23:59',
+      matches: [],
+      allHalls: [],
+      allPeriods: [],
+      isLoading: false,
+    };
+
+    const ttcupState = {
+      date: new Date().toISOString().split('T')[0],
+      country: 'all',
+      hallId: 'all',
+      statusTab: 'all',
+      timeframeFrom: '00:00',
+      timeframeTo: '23:59',
+      searchQuery: '',
+      viewMode: 'cards',
+      matches: [],
+      tournaments: [],
+      isLoading: false,
+    };
+
+    const leagueProState = {
+      dateFrom: new Date().toISOString().split('T')[0],
+      dateTo: new Date().toISOString().split('T')[0],
+      tournamentId: 'all',
+      statusTab: 'all',
+      timeframeFrom: '00:00',
+      timeframeTo: '23:59',
+      searchQuery: '',
+      viewMode: 'cards',
+      matches: [],
+      tournaments: [],
+      isLoading: false,
+    };
+
+    const sportLigaState = {
+      dateFrom: new Date().toISOString().split('T')[0],
+      dateTo: new Date().toISOString().split('T')[0],
+      tournamentId: 'all',
+      statusTab: 'all',
+      timeframeFrom: '00:00',
+      timeframeTo: '23:59',
+      searchQuery: '',
+      viewMode: 'cards',
+      matches: [],
+      tournaments: [],
+      isLoading: false,
+    };
+
+    const unifiedState = {
+      dateFrom: new Date().toISOString().split('T')[0],
+      dateTo: new Date().toISOString().split('T')[0],
+      platform: 'all',
+      statusTab: 'all',
+      timeframeFrom: '00:00',
+      timeframeTo: '23:59',
+      searchQuery: '',
+      viewMode: 'cards',
+      matches: [],
+      counts: { all: 0, live: 0, upcoming: 0, finished: 0 },
+      platformCounts: { setka: 0, ttcup: 0, league_pro: 0, sport_liga: 0 },
+      isLoading: false,
+    };
+
+    // Auto-refresh control
+    let refreshInterval = 30;
+    let countdown = 30;
+    let countdownTimerId = null;
+
+    // Helper: Formats match time dynamically according to state.timeZone
+    function formatMatchTime(isoStr, fallbackTime = '--:--') {
+      if (isoStr) {
+        try {
+          const dt = new Date(isoStr);
+          if (!isNaN(dt.getTime())) {
+            const tz = (state.timeZone || 'local').trim();
+            if (tz === 'local') {
+              return new Intl.DateTimeFormat('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+              }).format(dt);
+            }
+            // Pure UTC offset mode
+            let offsetHours = 0;
+            const upperTz = tz.toUpperCase();
+            if (upperTz === 'UTC' || upperTz === 'UTC+0' || upperTz === 'UTC-0') {
+              offsetHours = 0;
+            } else if (upperTz.startsWith('UTC+')) {
+              offsetHours = parseFloat(upperTz.replace('UTC+', '')) || 0;
+            } else if (upperTz.startsWith('UTC-')) {
+              offsetHours = -(parseFloat(upperTz.replace('UTC-', '')) || 0);
+            } else {
+              try {
+                return new Intl.DateTimeFormat('en-GB', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                  timeZone: tz,
+                }).format(dt);
+              } catch (e) {}
+            }
+            const shiftedMs = dt.getTime() + offsetHours * 3600 * 1000;
+            const shiftedDate = new Date(shiftedMs);
+            const hh = String(shiftedDate.getUTCHours()).padStart(2, '0');
+            const mm = String(shiftedDate.getUTCMinutes()).padStart(2, '0');
+            return `${hh}:${mm}`;
+          }
+        } catch (e) {}
+      }
+      return fallbackTime || '--:--';
+    }
+
+    // Helper: Produces vector SVG country flag badges (eliminating broken emoji initials on Windows)
+    function getCountryBadgeHtml(country, countryCode, city) {
+      const code = (countryCode || '').toLowerCase();
+      const cName = (country || '').toLowerCase();
+      const cityName = (city || '').trim();
+
+      // Russia (ru)
+      if (code === 'ru' || cName.includes('russia') || cName.includes('россия')) {
+        const cityLabel = cityName ? `<span class="text-[10px] text-blue-200/70 border-l border-blue-500/30 pl-1.5 ml-0.5">${cityName}</span>` : '';
+        return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-300 font-medium text-xs shadow-sm whitespace-nowrap flex-shrink-0" title="Russia${cityName ? ' • ' + cityName : ''}">
+          <svg class="w-3.5 h-2.5 rounded-sm overflow-hidden flex-shrink-0 shadow-xs" viewBox="0 0 640 480">
+            <path fill="#fff" d="M0 0h640v160H0z"/>
+            <path fill="#0039a6" d="M0 160h640v160H0z"/>
+            <path fill="#d52b1e" d="M0 320h640v160H0z"/>
+          </svg>
+          <span>Россия</span>${cityLabel}
+        </span>`;
+      }
+
+      // Belarus (by)
+      if (code === 'by' || cName.includes('belarus') || cName.includes('беларусь') || cName.includes('minsk') || cName.includes('минск')) {
+        const cityLabel = cityName ? `<span class="text-[10px] text-emerald-200/70 border-l border-emerald-500/30 pl-1.5 ml-0.5">${cityName}</span>` : '<span class="text-[10px] text-emerald-200/70 border-l border-emerald-500/30 pl-1.5 ml-0.5">Минск</span>';
+        return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-medium text-xs shadow-sm whitespace-nowrap flex-shrink-0" title="Belarus${cityName ? ' • ' + cityName : ''}">
+          <svg class="w-3.5 h-2.5 rounded-sm overflow-hidden flex-shrink-0 shadow-xs" viewBox="0 0 640 480">
+            <path fill="#c8313e" d="M0 0h640v320H0z"/>
+            <path fill="#4aa657" d="M0 320h640v160H0z"/>
+            <path fill="#fff" d="M0 0h110v480H0z"/>
+            <path fill="#c8313e" d="M10 20l40 40-40 40 40 40-40 40 40 40-40 40 40 40-40 40 40 40-40 40 40 40-40 40M90 20l-40 40 40 40-40 40 40 40-40 40 40 40-40 40 40 40-40 40 40 40-40 40 40 40-40 40"/>
+          </svg>
+          <span>Беларусь</span>${cityLabel}
+        </span>`;
+      }
+
+      // Moldova (md)
+      if (code === 'md' || cName.includes('moldova') || cName.includes('молдова') || cName.includes('chisinau') || cName.includes('кишинев')) {
+        const cityLabel = cityName ? `<span class="text-[10px] text-amber-200/70 border-l border-amber-500/30 pl-1.5 ml-0.5">${cityName}</span>` : '<span class="text-[10px] text-amber-200/70 border-l border-amber-500/30 pl-1.5 ml-0.5">Кишинев</span>';
+        return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-300 font-medium text-xs shadow-sm whitespace-nowrap flex-shrink-0" title="Moldova${cityName ? ' • ' + cityName : ''}">
+          <svg class="w-3.5 h-2.5 rounded-sm overflow-hidden flex-shrink-0 shadow-xs" viewBox="0 0 640 480">
+            <path fill="#003da5" d="M0 0h213.3v480H0z"/>
+            <path fill="#ffd100" d="M213.3 0h213.4v480H213.3z"/>
+            <path fill="#c8102e" d="M426.7 0h213.3v480H426.7z"/>
+            <path fill="#8b5a2b" d="M280 200h80v80h-80z"/>
+            <path fill="#c8102e" d="M300 215h40v50h-40z"/>
+            <circle cx="320" cy="240" r="10" fill="#ffd100"/>
+          </svg>
+          <span>Молдова</span>${cityLabel}
+        </span>`;
+      }
+
+      // Czech Republic (cz)
+      if (code === 'cz' || cName.includes('czech')) {
+        return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-300 font-medium text-xs shadow-sm whitespace-nowrap flex-shrink-0" title="Czech Republic">
+          <svg class="w-3.5 h-2.5 rounded-sm overflow-hidden flex-shrink-0 shadow-xs" viewBox="0 0 640 480">
+            <path fill="#d7141a" d="M0 0h640v480H0z"/>
+            <path fill="#fff" d="M0 0h640v240H0z"/>
+            <path fill="#11457e" d="M0 0l360 240L0 480z"/>
+          </svg>
+          <span>Чехия</span>
+        </span>`;
+      }
+
+      // Poland (pl)
+      if (code === 'pl' || cName.includes('poland')) {
+        return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-rose-500/10 border border-rose-500/30 text-rose-300 font-medium text-xs shadow-sm whitespace-nowrap flex-shrink-0" title="Poland">
+          <svg class="w-3.5 h-2.5 rounded-sm overflow-hidden flex-shrink-0 shadow-xs" viewBox="0 0 640 480">
+            <path fill="#dc143c" d="M0 240h640v240H0z"/>
+            <path fill="#fff" d="M0 0h640v240H0z"/>
+          </svg>
+          <span>Польша</span>
+        </span>`;
+      }
+
+      // Ukraine (ua)
+      if (code === 'ua' || cName.includes('ukraine')) {
+        return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-300 font-medium text-xs shadow-sm whitespace-nowrap flex-shrink-0" title="Ukraine">
+          <svg class="w-3.5 h-2.5 rounded-sm overflow-hidden flex-shrink-0 shadow-xs" viewBox="0 0 640 480">
+            <path fill="#ffd500" d="M0 240h640v240H0z"/>
+            <path fill="#005bbb" d="M0 0h640v240H0z"/>
+          </svg>
+          <span>Украина</span>
+        </span>`;
+      }
+
+      return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-slate-300 font-medium text-xs">
+        <span>🌐</span> <span>${country || 'Intl'}</span>
+      </span>`;
+    }
+
+    // Helper: Platform badges
+    function getPlatformBadgeHtml(platform) {
+      if (platform === 'setka') {
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold text-[11px] font-mono whitespace-nowrap flex-shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span> Setka Cup
+        </span>`;
+      }
+      if (platform === 'ttcup') {
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 font-semibold text-[11px] font-mono whitespace-nowrap flex-shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span> TT Cup
+        </span>`;
+      }
+      if (platform === 'league_pro' || platform === 'leaguepro') {
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-300 font-semibold text-[11px] font-mono whitespace-nowrap flex-shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0"></span> League Pro
+        </span>`;
+      }
+      if (platform === 'sport_liga' || platform === 'sportliga' || platform === 'liga_pro' || platform === 'ligapro') {
+        return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-rose-500/10 border border-rose-500/30 text-rose-300 font-semibold text-[11px] font-mono whitespace-nowrap flex-shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-400 flex-shrink-0"></span> Liga Pro
+        </span>`;
+      }
+      return '';
+    }
+
+    // Helper: Status badge
+    function getStatusBadgeHtml(status) {
+      if (status === 'live') {
+        return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold tracking-wide animate-pulse shadow-sm whitespace-nowrap flex-shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> LIVE
+        </span>`;
+      }
+      if (status === 'upcoming') {
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-medium whitespace-nowrap flex-shrink-0">
+          <i data-lucide="clock" class="w-3 h-3"></i> Ожидается
+        </span>`;
+      }
+      return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-xs whitespace-nowrap flex-shrink-0">
+        <i data-lucide="check" class="w-3 h-3"></i> Завершен
+      </span>`;
+    }
+
+    // Change Timezone Dropdown handler - immediately re-renders all match cards
+    function changeTimezone(tz) {
+      state.timeZone = tz;
+      localStorage.setItem('tt_timezone', tz);
+
+      if (currentPlatform === 'unified') {
+        renderUnifiedMatches();
+      } else if (currentPlatform === 'setkacup') {
+        renderMatches();
+      } else if (currentPlatform === 'ttcup') {
+        renderTTCup();
+      } else if (currentPlatform === 'leaguepro') {
+        renderLeagueProMatches();
+      } else if (currentPlatform === 'sportliga') {
+        renderSportLigaMatches();
+      }
+    }
+
+    
+    // TT Cup Cookie Modal & State Management
+    async function checkTTCupCookieStatus() {
+      try {
+        const res = await fetch('/api/ttcup/config');
+        if (!res.ok) return;
+        const data = await res.json();
+        const dot = document.getElementById('header-cookie-dot');
+        const modalStatus = document.getElementById('ttcup-cookie-modal-status');
+        const modalSnippet = document.getElementById('ttcup-cookie-modal-snippet');
+
+        if (data.cookie_set) {
+          if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+          if (modalStatus) modalStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Активен';
+          if (modalSnippet) {
+            modalSnippet.textContent = data.cookie_snippet || 'Cookie сохранен';
+            modalSnippet.classList.remove('hidden');
+          }
+        } else if (data.captcha_required) {
+          if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+          if (modalStatus) modalStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Требуется капча';
+          if (modalSnippet) modalSnippet.classList.add('hidden');
+        } else {
+          if (dot) dot.className = 'w-2 h-2 rounded-full bg-slate-500';
+          if (modalStatus) modalStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-500"></span> Не настроен';
+          if (modalSnippet) modalSnippet.classList.add('hidden');
+        }
+      } catch (e) {
+        console.error('Failed to check TT Cup cookie status:', e);
+      }
+    }
+
+    function openTTCupCookieModal() {
+      const modal = document.getElementById('ttcup-cookie-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        lucide.createIcons();
+        checkTTCupCookieStatus();
+      }
+    }
+
+    function closeTTCupCookieModal() {
+      const modal = document.getElementById('ttcup-cookie-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function saveTTCupCookie() {
+      const input = document.getElementById('ttcup-cookie-modal-input');
+      const cookieVal = input ? input.value.trim() : '';
+      if (!cookieVal) {
+        alert('Пожалуйста, вставьте значение Cookie');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/ttcup/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cookie: cookieVal })
+        });
+        if (res.ok) {
+          closeTTCupCookieModal();
+          checkTTCupCookieStatus();
+          // Trigger immediate refresh of TT Cup & Unified view
+          fetchUnifiedMatches();
+          fetchTTCupMatches();
+        } else {
+          alert('Ошибка при сохранении Cookie');
+        }
+      } catch (err) {
+        console.error('Error saving cookie:', err);
+        alert('Сетевая ошибка при отправке Cookie');
+      }
+    }
+
+    async function clearTTCupCookie() {
+      try {
+        const res = await fetch('/api/ttcup/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cookie: '' })
+        });
+        if (res.ok) {
+          const input = document.getElementById('ttcup-cookie-modal-input');
+          if (input) input.value = '';
+          checkTTCupCookieStatus();
+          closeTTCupCookieModal();
+          fetchUnifiedMatches();
+          fetchTTCupMatches();
+        }
+      } catch (e) {
+        console.error('Error clearing cookie:', e);
+      }
+    }
+
+
+    // Platform Switcher
+    function switchPlatform(platform) {
+      currentPlatform = platform;
+
+      const platforms = ['unified', 'setkacup', 'ttcup', 'leaguepro', 'sportliga'];
+      platforms.forEach(p => {
+        const btn = document.getElementById(`tab-btn-${p}`);
+        const sec = document.getElementById(`section-${p}`);
+        if (btn && sec) {
+          if (p === platform) {
+            sec.classList.remove('hidden');
+            if (p === 'unified') {
+              btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-amber-900/40 transition-all duration-200 whitespace-nowrap';
+            } else if (p === 'setkacup') {
+              btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/40 transition-all duration-200 whitespace-nowrap';
+            } else if (p === 'ttcup') {
+              btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-900/40 transition-all duration-200 whitespace-nowrap';
+            } else if (p === 'leaguepro') {
+              btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-900/40 transition-all duration-200 whitespace-nowrap';
+            } else if (p === 'sportliga') {
+              btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-900/40 transition-all duration-200 whitespace-nowrap';
+            }
+          } else {
+            sec.classList.add('hidden');
+            btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all duration-200 whitespace-nowrap';
+          }
+        }
+      });
+
+      // Fetch data for the active platform
+      fetchCurrentPlatformData();
+      lucide.createIcons();
+    }
+
+    function fetchCurrentPlatformData() {
+      if (currentPlatform === 'unified') {
+        fetchUnifiedMatches();
+      } else if (currentPlatform === 'setkacup') {
+        fetchMatches();
+      } else if (currentPlatform === 'ttcup') {
+        fetchTTCup();
+      } else if (currentPlatform === 'leaguepro') {
+        fetchLeagueProMatches();
+      } else if (currentPlatform === 'sportliga') {
+        fetchSportLigaMatches();
+      }
+    }
+
+    // =========================================================================
+    // 1. UNIFIED 4-IN-1 FUNCTIONS
+    // =========================================================================
+
+    function setUnifiedQuickDate(type) {
+      const d = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const toYMD = date => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+      if (type === 'today') {
+        const todayStr = toYMD(d);
+        unifiedState.dateFrom = todayStr;
+        unifiedState.dateTo = todayStr;
+      } else if (type === 'tomorrow') {
+        d.setDate(d.getDate() + 1);
+        const tomStr = toYMD(d);
+        unifiedState.dateFrom = tomStr;
+        unifiedState.dateTo = tomStr;
+      } else if (type === '2days') {
+        const todayStr = toYMD(d);
+        d.setDate(d.getDate() + 1);
+        const tomStr = toYMD(d);
+        unifiedState.dateFrom = todayStr;
+        unifiedState.dateTo = tomStr;
+      }
+
+      document.getElementById('unified-date-from').value = unifiedState.dateFrom;
+      document.getElementById('unified-date-to').value = unifiedState.dateTo;
+      fetchUnifiedMatches();
+    }
+
+    function resetUnifiedTimeframe() {
+      unifiedState.timeframeFrom = '00:00';
+      unifiedState.timeframeTo = '23:59';
+      document.getElementById('unified-time-from').value = '00:00';
+      document.getElementById('unified-time-to').value = '23:59';
+      fetchUnifiedMatches();
+    }
+
+    let unifiedSearchTimeout = null;
+    function handleUnifiedSearch(val) {
+      clearTimeout(unifiedSearchTimeout);
+      unifiedSearchTimeout = setTimeout(() => {
+        unifiedState.searchQuery = val;
+        fetchUnifiedMatches();
+      }, 300);
+    }
+
+    function setUnifiedStatus(status) {
+      unifiedState.statusTab = status;
+      ['all', 'live', 'upcoming', 'finished'].forEach(s => {
+        const btn = document.getElementById(`unified-status-tab-${s}`);
+        if (btn) {
+          if (s === status) {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white';
+          }
+        }
+      });
+      fetchUnifiedMatches();
+    }
+
+    function setUnifiedViewMode(mode) {
+      unifiedState.viewMode = mode;
+      const cardsBtn = document.getElementById('unified-view-cards-btn');
+      const tableBtn = document.getElementById('unified-view-table-btn');
+      const cardsWrap = document.getElementById('unified-cards-wrapper');
+      const tableWrap = document.getElementById('unified-table-wrapper');
+
+      if (mode === 'cards') {
+        cardsBtn.className = 'p-1.5 rounded-lg bg-amber-500/20 text-amber-300';
+        tableBtn.className = 'p-1.5 rounded-lg text-slate-400 hover:text-white';
+        cardsWrap.classList.remove('hidden');
+        tableWrap.classList.add('hidden');
+      } else {
+        tableBtn.className = 'p-1.5 rounded-lg bg-amber-500/20 text-amber-300';
+        cardsBtn.className = 'p-1.5 rounded-lg text-slate-400 hover:text-white';
+        tableWrap.classList.remove('hidden');
+        cardsWrap.classList.add('hidden');
+      }
+    }
+
+    async function fetchUnifiedMatches() {
+      try {
+        const params = new URLSearchParams();
+        if (unifiedState.dateFrom) params.set('date_from', unifiedState.dateFrom);
+        if (unifiedState.dateTo) params.set('date_to', unifiedState.dateTo);
+        if (unifiedState.platform && unifiedState.platform !== 'all') params.set('platform', unifiedState.platform);
+        if (unifiedState.statusTab && unifiedState.statusTab !== 'all') params.set('status', unifiedState.statusTab);
+        if (unifiedState.timeframeFrom && unifiedState.timeframeFrom !== '00:00') params.set('from_time', unifiedState.timeframeFrom);
+        if (unifiedState.timeframeTo && unifiedState.timeframeTo !== '23:59') params.set('to_time', unifiedState.timeframeTo);
+        if (unifiedState.searchQuery) params.set('search', unifiedState.searchQuery);
+
+        const res = await fetch(`/api/all/matches?${params.toString()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        unifiedState.matches = data.matches || [];
+        unifiedState.counts = data.counts || {};
+        unifiedState.platformCounts = data.platform_counts || {};
+
+        // Update stats
+        document.getElementById('stat-unified-total').textContent = unifiedState.counts.all || 0;
+        document.getElementById('stat-unified-live').textContent = unifiedState.counts.live || 0;
+        document.getElementById('stat-unified-upcoming').textContent = unifiedState.counts.upcoming || 0;
+        document.getElementById('stat-unified-finished').textContent = unifiedState.counts.finished || 0;
+
+        document.getElementById('unified-tab-count-all').textContent = unifiedState.counts.all || 0;
+        document.getElementById('unified-tab-count-live').textContent = unifiedState.counts.live || 0;
+        document.getElementById('unified-tab-count-upcoming').textContent = unifiedState.counts.upcoming || 0;
+        document.getElementById('unified-tab-count-finished').textContent = unifiedState.counts.finished || 0;
+
+        document.getElementById('unified-badge-count').textContent = unifiedState.counts.all || 0;
+
+        document.getElementById('stat-unified-setka').textContent = unifiedState.platformCounts.setka || 0;
+        document.getElementById('stat-unified-ttcup').textContent = unifiedState.platformCounts.ttcup || 0;
+        document.getElementById('stat-unified-leaguepro').textContent = unifiedState.platformCounts.league_pro || 0;
+        document.getElementById('stat-unified-sportliga').textContent = unifiedState.platformCounts.sport_liga || 0;
+
+        renderUnifiedMatches();
+      } catch (err) {
+        console.error('Error fetching unified matches:', err);
+      }
+    }
+
+    function isJustFinishedMatch(m) {
+      if (m.status !== 'finished') return false;
+      if (m.start_date) {
+        try {
+          const st = new Date(m.start_date).getTime();
+          if (!isNaN(st)) {
+            const endEst = st + 18 * 60 * 1000;
+            const now = Date.now();
+            const diffSec = (now - endEst) / 1000;
+            return (-300 <= diffSec && diffSec <= 720) || (600 <= (now - st) / 1000 && (now - st) / 1000 <= 2100);
+          }
+        } catch (e) {}
+      }
+      return false;
+    }
+
+    function renderUnifiedMatches() {
+      const cardsWrapper = document.getElementById('unified-cards-wrapper');
+      const tableBody = document.getElementById('unified-table-body');
+      const emptyState = document.getElementById('unified-empty-state');
+
+      if (!unifiedState.matches || unifiedState.matches.length === 0) {
+        cardsWrapper.innerHTML = '';
+        tableBody.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      // Render Cards
+      cardsWrapper.innerHTML = unifiedState.matches.map(m => {
+        const timeDisplay = formatMatchTime(m.start_date, m.time);
+        const countryBadge = getCountryBadgeHtml(m.country, m.country_code, m.city);
+        const platformBadge = getPlatformBadgeHtml(m.platform);
+        const statusBadge = getStatusBadgeHtml(m.status);
+
+        return `
+          <div class="glass-card rounded-2xl p-4 flex flex-col justify-between hover:border-amber-500/30 transition-all duration-200">
+            <div>
+              <!-- Top Row: Time, Platform, Country, Status -->
+              <div class="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5 mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-sm font-bold text-white bg-slate-800/80 px-2 py-0.5 rounded-lg">${timeDisplay}</span>
+                  ${platformBadge}
+                  ${countryBadge}
+                </div>
+                ${statusBadge}
+              </div>
+
+              <!-- Tournament / Stage -->
+              <div class="text-xs text-slate-400 font-medium mb-3 truncate flex items-center justify-between">
+                <span class="truncate">${m.tournament_name || 'Tournament'}</span>
+                <span class="text-[11px] text-slate-500 ml-2 whitespace-nowrap">${m.stage || ''}</span>
+              </div>
+
+              <!-- Players & Scores -->
+              <div class="space-y-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    ${m.player1_photo ? `<img src="${m.player1_photo}" class="w-6 h-6 rounded-full object-cover border border-slate-700 flex-shrink-0" onerror="this.style.display='none'">` : '<div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 flex-shrink-0">1</div>'}
+                    <span class="text-xs font-semibold text-white truncate">${m.player1_name}</span>
+                  </div>
+                  <span class="font-mono text-sm font-bold text-amber-400 ml-2">${m.score && m.score !== '-' ? m.score.split(':')[0] || '0' : '-'}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    ${m.player2_photo ? `<img src="${m.player2_photo}" class="w-6 h-6 rounded-full object-cover border border-slate-700 flex-shrink-0" onerror="this.style.display='none'">` : '<div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 flex-shrink-0">2</div>'}
+                    <span class="text-xs font-semibold text-white truncate">${m.player2_name}</span>
+                  </div>
+                  <span class="font-mono text-sm font-bold text-amber-400 ml-2">${m.score && m.score !== '-' ? m.score.split(':')[1] || '0' : '-'}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer: Set scores and link -->
+            <div class="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+              <span class="font-mono text-[11px] text-slate-400 truncate max-w-[180px]">
+                ${m.set_scores ? `Сеты: ${m.set_scores}` : 'Матч запланирован'}
+              </span>
+              ${m.url ? `
+                <a href="${m.url}" target="_blank" class="text-amber-400 hover:text-amber-300 flex items-center gap-1 text-[11px] font-medium transition-colors">
+                  <span>Сайт</span> <i data-lucide="external-link" class="w-3 h-3"></i>
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Render Table Rows
+      tableBody.innerHTML = unifiedState.matches.map(m => {
+        const timeDisplay = formatMatchTime(m.start_date, m.time);
+        const countryBadge = getCountryBadgeHtml(m.country, m.country_code, m.city);
+        const platformBadge = getPlatformBadgeHtml(m.platform);
+        const statusBadge = getStatusBadgeHtml(m.status);
+
+        return `
+          <tr class="hover:bg-slate-900/50 transition-colors">
+            <td class="p-3.5 font-mono text-xs text-white font-semibold">${timeDisplay}</td>
+            <td class="p-3.5">${platformBadge}</td>
+            <td class="p-3.5">${countryBadge}</td>
+            <td class="p-3.5 text-xs text-slate-300 font-medium">
+              <div>${m.tournament_name || ''}</div>
+              <div class="text-[10px] text-slate-500">${m.stage || ''}</div>
+            </td>
+            <td class="p-3.5">
+              <div class="text-xs font-medium text-white">${m.player1_name}</div>
+              <div class="text-xs font-medium text-slate-400">${m.player2_name}</div>
+            </td>
+            <td class="p-3.5 text-center font-mono font-bold text-amber-400">${m.score || '-'}</td>
+            <td class="p-3.5 font-mono text-xs text-slate-400">${m.set_scores || '-'}</td>
+            <td class="p-3.5 text-right">${statusBadge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 2. LEAGUE PRO FUNCTIONS
+    // =========================================================================
+
+    function setLeagueProQuickDate(type) {
+      const d = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const toYMD = date => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+      if (type === 'today') {
+        const s = toYMD(d);
+        leagueProState.dateFrom = s;
+        leagueProState.dateTo = s;
+      } else if (type === 'tomorrow') {
+        d.setDate(d.getDate() + 1);
+        const s = toYMD(d);
+        leagueProState.dateFrom = s;
+        leagueProState.dateTo = s;
+      } else if (type === '2days') {
+        const s1 = toYMD(d);
+        d.setDate(d.getDate() + 1);
+        const s2 = toYMD(d);
+        leagueProState.dateFrom = s1;
+        leagueProState.dateTo = s2;
+      }
+
+      document.getElementById('leaguepro-date-from').value = leagueProState.dateFrom;
+      document.getElementById('leaguepro-date-to').value = leagueProState.dateTo;
+      fetchLeagueProMatches();
+    }
+
+    function resetLeagueProTimeframe() {
+      leagueProState.timeframeFrom = '00:00';
+      leagueProState.timeframeTo = '23:59';
+      document.getElementById('leaguepro-time-from').value = '00:00';
+      document.getElementById('leaguepro-time-to').value = '23:59';
+      fetchLeagueProMatches();
+    }
+
+    let leagueProSearchTimeout = null;
+    function handleLeagueProSearch(val) {
+      clearTimeout(leagueProSearchTimeout);
+      leagueProSearchTimeout = setTimeout(() => {
+        leagueProState.searchQuery = val;
+        fetchLeagueProMatches();
+      }, 300);
+    }
+
+    function setLeagueProTournamentFilter(val) {
+      leagueProState.tournamentId = val;
+      fetchLeagueProMatches();
+    }
+
+    function setLeagueProStatusTab(status) {
+      leagueProState.statusTab = status;
+      ['all', 'live', 'upcoming', 'finished'].forEach(s => {
+        const btn = document.getElementById(`leaguepro-status-tab-${s}`);
+        if (btn) {
+          if (s === status) {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/40';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white';
+          }
+        }
+      });
+      fetchLeagueProMatches();
+    }
+
+    function setLeagueProViewMode(mode) {
+      leagueProState.viewMode = mode;
+      const cardsBtn = document.getElementById('leaguepro-view-cards-btn');
+      const tableBtn = document.getElementById('leaguepro-view-table-btn');
+      const cardsWrap = document.getElementById('leaguepro-cards-wrapper');
+      const tableWrap = document.getElementById('leaguepro-table-wrapper');
+
+      if (mode === 'cards') {
+        cardsBtn.className = 'p-1.5 rounded-lg bg-purple-500/20 text-purple-300';
+        tableBtn.className = 'p-1.5 rounded-lg text-slate-400 hover:text-white';
+        cardsWrap.classList.remove('hidden');
+        tableWrap.classList.add('hidden');
+      } else {
+        tableBtn.className = 'p-1.5 rounded-lg bg-purple-500/20 text-purple-300';
+        cardsBtn.className = 'p-1.5 rounded-lg text-slate-400 hover:text-white';
+        tableWrap.classList.remove('hidden');
+        cardsWrap.classList.add('hidden');
+      }
+    }
+
+    async function fetchLeagueProMatches() {
+      try {
+        const params = new URLSearchParams();
+        if (leagueProState.dateFrom) params.set('date_from', leagueProState.dateFrom);
+        if (leagueProState.dateTo) params.set('date_to', leagueProState.dateTo);
+        if (leagueProState.tournamentId && leagueProState.tournamentId !== 'all') params.set('tournament_id', leagueProState.tournamentId);
+        if (leagueProState.statusTab && leagueProState.statusTab !== 'all') params.set('status', leagueProState.statusTab);
+        if (leagueProState.timeframeFrom && leagueProState.timeframeFrom !== '00:00') params.set('from_time', leagueProState.timeframeFrom);
+        if (leagueProState.timeframeTo && leagueProState.timeframeTo !== '23:59') params.set('to_time', leagueProState.timeframeTo);
+        if (leagueProState.searchQuery) params.set('search', leagueProState.searchQuery);
+
+        const res = await fetch(`/api/leaguepro/matches?${params.toString()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        leagueProState.matches = data.matches || [];
+        leagueProState.tournaments = data.tournaments || [];
+
+        // Update counts
+        const counts = data.counts || {};
+        document.getElementById('stat-leaguepro-total').textContent = counts.all || 0;
+        document.getElementById('stat-leaguepro-live').textContent = counts.live || 0;
+        document.getElementById('stat-leaguepro-upcoming').textContent = counts.upcoming || 0;
+        document.getElementById('stat-leaguepro-finished').textContent = counts.finished || 0;
+        document.getElementById('stat-leaguepro-tournaments').textContent = leagueProState.tournaments.length;
+
+        document.getElementById('leaguepro-tab-count-all').textContent = counts.all || 0;
+        document.getElementById('leaguepro-tab-count-live').textContent = counts.live || 0;
+        document.getElementById('leaguepro-tab-count-upcoming').textContent = counts.upcoming || 0;
+        document.getElementById('leaguepro-tab-count-finished').textContent = counts.finished || 0;
+
+        // Populate tournament select
+        const tournSelect = document.getElementById('leaguepro-tournament-select');
+        if (tournSelect && leagueProState.tournaments.length > 0) {
+          const currentVal = leagueProState.tournamentId;
+          tournSelect.innerHTML = '<option value="all">Все турниры периода</option>' +
+            leagueProState.tournaments.map(t => `<option value="${t.id}" ${String(t.id) === String(currentVal) ? 'selected' : ''}>${t.name}</option>`).join('');
+        }
+
+        renderLeagueProMatches();
+      } catch (err) {
+        console.error('Error fetching League Pro matches:', err);
+      }
+    }
+
+    function renderLeagueProMatches() {
+      const cardsWrapper = document.getElementById('leaguepro-cards-wrapper');
+      const tableBody = document.getElementById('leaguepro-matches-table-body');
+
+      // Cards
+      cardsWrapper.innerHTML = leagueProState.matches.map(m => {
+        const timeDisplay = formatMatchTime(m.start_date, m.time);
+        const statusBadge = getStatusBadgeHtml(m.status);
+
+        return `
+          <div class="glass-card rounded-2xl p-4 flex flex-col justify-between hover:border-purple-500/40 transition-all duration-200">
+            <div>
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5 mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-sm font-bold text-white bg-slate-800/80 px-2 py-0.5 rounded-lg">${timeDisplay}</span>
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/30 text-blue-300 text-xs">
+                    <svg class="w-3.5 h-2.5 rounded-sm" viewBox="0 0 640 480"><path fill="#d7141a" d="M0 0h640v480H0z"/><path fill="#fff" d="M0 0h640v240H0z"/><path fill="#11457e" d="M0 0l360 240L0 480z"/></svg>
+                    Чехия
+                  </span>
+                </div>
+                ${statusBadge}
+              </div>
+
+              <div class="text-xs text-purple-300 font-medium mb-3 truncate flex items-center justify-between">
+                <span class="truncate">${m.tournament_name}</span>
+                <span class="text-[11px] text-slate-400 font-mono">${m.stage}</span>
+              </div>
+
+              <div class="space-y-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    ${m.player1.avatar ? `<img src="${m.player1.avatar}" class="w-6 h-6 rounded-full object-cover border border-slate-700 flex-shrink-0" onerror="this.style.display='none'">` : '<div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400">1</div>'}
+                    <span class="text-xs font-semibold text-white truncate">${m.player1.name}</span>
+                    ${m.player1.rating ? `<span class="text-[10px] text-slate-500 font-mono">(${Math.round(m.player1.rating)})</span>` : ''}
+                  </div>
+                  <span class="font-mono text-sm font-bold text-purple-400">${m.score !== '-' ? m.score.split(':')[0] || '0' : '-'}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    ${m.player2.avatar ? `<img src="${m.player2.avatar}" class="w-6 h-6 rounded-full object-cover border border-slate-700 flex-shrink-0" onerror="this.style.display='none'">` : '<div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400">2</div>'}
+                    <span class="text-xs font-semibold text-white truncate">${m.player2.name}</span>
+                    ${m.player2.rating ? `<span class="text-[10px] text-slate-500 font-mono">(${Math.round(m.player2.rating)})</span>` : ''}
+                  </div>
+                  <span class="font-mono text-sm font-bold text-purple-400">${m.score !== '-' ? m.score.split(':')[1] || '0' : '-'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+              <span class="font-mono text-[11px] truncate max-w-[200px]">${m.set_scores ? `Сеты: ${m.set_scores}` : 'Счет по сетам отсутствует'}</span>
+              <a href="https://tt.league-pro.com/en/tournaments/${m.tournament_id}/${m.id}" target="_blank" class="text-purple-400 hover:text-purple-300 flex items-center gap-1 text-[11px] font-medium">
+                <span>Матч</span> <i data-lucide="external-link" class="w-3 h-3"></i>
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Table
+      tableBody.innerHTML = leagueProState.matches.map(m => {
+        const timeDisplay = formatMatchTime(m.start_date, m.time);
+        const statusBadge = getStatusBadgeHtml(m.status);
+
+        return `
+          <tr class="hover:bg-slate-900/50 transition-colors">
+            <td class="p-3.5 font-mono text-xs text-white font-semibold">${timeDisplay}</td>
+            <td class="p-3.5 text-xs text-purple-300 font-medium">${m.tournament_name}</td>
+            <td class="p-3.5 text-xs text-slate-400 font-mono">${m.stage}</td>
+            <td class="p-3.5 text-xs font-medium text-white">${m.player1.name}</td>
+            <td class="p-3.5 text-center font-mono font-bold text-purple-400">${m.score}</td>
+            <td class="p-3.5 text-xs font-medium text-slate-300">${m.player2.name}</td>
+            <td class="p-3.5 font-mono text-xs text-slate-400">${m.set_scores || '-'}</td>
+            <td class="p-3.5 text-right">${statusBadge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 3. SPORT-LIGA PRO FUNCTIONS
+    // =========================================================================
+
+    function setSportLigaQuickDate(type) {
+      const d = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const toYMD = date => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+      if (type === 'today') {
+        const s = toYMD(d);
+        sportLigaState.dateFrom = s;
+        sportLigaState.dateTo = s;
+      } else if (type === 'tomorrow') {
+        d.setDate(d.getDate() + 1);
+        const s = toYMD(d);
+        sportLigaState.dateFrom = s;
+        sportLigaState.dateTo = s;
+      } else if (type === '2days') {
+        const s1 = toYMD(d);
+        d.setDate(d.getDate() + 1);
+        const s2 = toYMD(d);
+        sportLigaState.dateFrom = s1;
+        sportLigaState.dateTo = s2;
+      }
+
+      document.getElementById('sportliga-date-from').value = sportLigaState.dateFrom;
+      document.getElementById('sportliga-date-to').value = sportLigaState.dateTo;
+      fetchSportLigaMatches();
+    }
+
+    function resetSportLigaTimeframe() {
+      sportLigaState.timeframeFrom = '00:00';
+      sportLigaState.timeframeTo = '23:59';
+      document.getElementById('sportliga-time-from').value = '00:00';
+      document.getElementById('sportliga-time-to').value = '23:59';
+      fetchSportLigaMatches();
+    }
+
+    let sportLigaSearchTimeout = null;
+    function handleSportLigaSearch(val) {
+      clearTimeout(sportLigaSearchTimeout);
+      sportLigaSearchTimeout = setTimeout(() => {
+        sportLigaState.searchQuery = val;
+        fetchSportLigaMatches();
+      }, 300);
+    }
+
+    function setSportLigaTournamentFilter(val) {
+      sportLigaState.tournamentId = val;
+      fetchSportLigaMatches();
+    }
+
+    function setSportLigaStatusTab(status) {
+      sportLigaState.statusTab = status;
+      ['all', 'live', 'upcoming', 'finished'].forEach(s => {
+        const btn = document.getElementById(`sportliga-status-tab-${s}`);
+        if (btn) {
+          if (s === status) {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/40';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white';
+          }
+        }
+      });
+      fetchSportLigaMatches();
+    }
+
+    function setSportLigaViewMode(mode) {
+      sportLigaState.viewMode = mode;
+      const cardsBtn = document.getElementById('sportliga-view-cards-btn');
+      const tableBtn = document.getElementById('sportliga-view-table-btn');
+      const cardsWrap = document.getElementById('sportliga-cards-wrapper');
+      const tableWrap = document.getElementById('sportliga-table-wrapper');
+
+      if (mode === 'cards') {
+        cardsBtn.className = 'p-1.5 rounded-lg bg-rose-500/20 text-rose-300';
+        tableBtn.className = 'p-1.5 rounded-lg text-slate-400 hover:text-white';
+        cardsWrap.classList.remove('hidden');
+        tableWrap.classList.add('hidden');
+      } else {
+        tableBtn.className = 'p-1.5 rounded-lg bg-rose-500/20 text-rose-300';
+        cardsBtn.className = 'p-1.5 rounded-lg text-slate-400 hover:text-white';
+        tableWrap.classList.remove('hidden');
+        cardsWrap.classList.add('hidden');
+      }
+    }
+
+    async function fetchSportLigaMatches() {
+      try {
+        const params = new URLSearchParams();
+        if (sportLigaState.dateFrom) params.set('date_from', sportLigaState.dateFrom);
+        if (sportLigaState.dateTo) params.set('date_to', sportLigaState.dateTo);
+        if (sportLigaState.tournamentId && sportLigaState.tournamentId !== 'all') params.set('tournament_id', sportLigaState.tournamentId);
+        if (sportLigaState.statusTab && sportLigaState.statusTab !== 'all') params.set('status', sportLigaState.statusTab);
+        if (sportLigaState.timeframeFrom && sportLigaState.timeframeFrom !== '00:00') params.set('from_time', sportLigaState.timeframeFrom);
+        if (sportLigaState.timeframeTo && sportLigaState.timeframeTo !== '23:59') params.set('to_time', sportLigaState.timeframeTo);
+        if (sportLigaState.searchQuery) params.set('search', sportLigaState.searchQuery);
+
+        const res = await fetch(`/api/sportliga/matches?${params.toString()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        sportLigaState.matches = data.matches || [];
+        sportLigaState.tournaments = data.tournaments || [];
+
+        // Update counts
+        const counts = data.counts || {};
+        document.getElementById('stat-sportliga-total').textContent = counts.all || 0;
+        document.getElementById('stat-sportliga-live').textContent = counts.live || 0;
+        document.getElementById('stat-sportliga-upcoming').textContent = counts.upcoming || 0;
+        document.getElementById('stat-sportliga-finished').textContent = counts.finished || 0;
+        document.getElementById('stat-sportliga-tournaments').textContent = sportLigaState.tournaments.length;
+
+        document.getElementById('sportliga-tab-count-all').textContent = counts.all || 0;
+        document.getElementById('sportliga-tab-count-live').textContent = counts.live || 0;
+        document.getElementById('sportliga-tab-count-upcoming').textContent = counts.upcoming || 0;
+        document.getElementById('sportliga-tab-count-finished').textContent = counts.finished || 0;
+
+        // Populate tournament select
+        const tournSelect = document.getElementById('sportliga-tournament-select');
+        if (tournSelect && sportLigaState.tournaments.length > 0) {
+          const currentVal = sportLigaState.tournamentId;
+          tournSelect.innerHTML = '<option value="all">Все турниры периода</option>' +
+            sportLigaState.tournaments.map(t => `<option value="${t.id}" ${String(t.id) === String(currentVal) ? 'selected' : ''}>${t.name}</option>`).join('');
+        }
+
+        renderSportLigaMatches();
+      } catch (err) {
+        console.error('Error fetching Sport-Liga matches:', err);
+      }
+    }
+
+    function renderSportLigaMatches() {
+      const cardsWrapper = document.getElementById('sportliga-cards-wrapper');
+      const tableBody = document.getElementById('sportliga-matches-table-body');
+
+      cardsWrapper.innerHTML = sportLigaState.matches.map(m => {
+        const timeDisplay = formatMatchTime(m.start_date, m.time);
+        const statusBadge = getStatusBadgeHtml(m.status);
+        const countryBadge = getCountryBadgeHtml(m.country, m.country_code, m.city);
+
+        return `
+          <div class="glass-card rounded-2xl p-4 flex flex-col justify-between hover:border-rose-500/40 transition-all duration-200">
+            <div>
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5 mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-sm font-bold text-white bg-slate-800/80 px-2 py-0.5 rounded-lg">${timeDisplay}</span>
+                  ${countryBadge}
+                </div>
+                ${statusBadge}
+              </div>
+
+              <div class="text-xs text-rose-300 font-medium mb-3 truncate flex items-center justify-between">
+                <span class="truncate">${m.tournament_name}</span>
+                <span class="text-[11px] text-slate-400 font-mono">${m.stage}</span>
+              </div>
+
+              <div class="space-y-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    ${m.player1.avatar ? `<img src="${m.player1.avatar}" class="w-6 h-6 rounded-full object-cover border border-slate-700 flex-shrink-0" onerror="this.style.display='none'">` : '<div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400">1</div>'}
+                    <span class="text-xs font-semibold text-white truncate">${m.player1.name}</span>
+                    ${m.player1.rating ? `<span class="text-[10px] text-slate-500 font-mono">(${Math.round(m.player1.rating)})</span>` : ''}
+                  </div>
+                  <span class="font-mono text-sm font-bold text-rose-400">${m.score !== '-' ? m.score.split(':')[0] || '0' : '-'}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    ${m.player2.avatar ? `<img src="${m.player2.avatar}" class="w-6 h-6 rounded-full object-cover border border-slate-700 flex-shrink-0" onerror="this.style.display='none'">` : '<div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400">2</div>'}
+                    <span class="text-xs font-semibold text-white truncate">${m.player2.name}</span>
+                    ${m.player2.rating ? `<span class="text-[10px] text-slate-500 font-mono">(${Math.round(m.player2.rating)})</span>` : ''}
+                  </div>
+                  <span class="font-mono text-sm font-bold text-rose-400">${m.score !== '-' ? m.score.split(':')[1] || '0' : '-'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+              <span class="font-mono text-[11px] truncate max-w-[200px]">${m.set_scores ? `Сеты: ${m.set_scores}` : 'Счет по сетам отсутствует'}</span>
+              <a href="https://www.sport-liga.pro/en/table-tennis" target="_blank" class="text-rose-400 hover:text-rose-300 flex items-center gap-1 text-[11px] font-medium">
+                <span>Матч</span> <i data-lucide="external-link" class="w-3 h-3"></i>
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      tableBody.innerHTML = sportLigaState.matches.map(m => {
+        const timeDisplay = formatMatchTime(m.start_date, m.time);
+        const statusBadge = getStatusBadgeHtml(m.status);
+
+        return `
+          <tr class="hover:bg-slate-900/50 transition-colors">
+            <td class="p-3.5 font-mono text-xs text-white font-semibold">${timeDisplay}</td>
+            <td class="p-3.5">${countryBadge}</td>
+            <td class="p-3.5 text-xs text-rose-300 font-medium">${m.tournament_name}</td>
+            <td class="p-3.5 text-xs text-slate-400 font-mono">${m.stage}</td>
+            <td class="p-3.5 text-xs font-medium text-white">${m.player1.name}</td>
+            <td class="p-3.5 text-center font-mono font-bold text-rose-400">${m.score}</td>
+            <td class="p-3.5 text-xs font-medium text-slate-300">${m.player2.name}</td>
+            <td class="p-3.5 font-mono text-xs text-slate-400">${m.set_scores || '-'}</td>
+            <td class="p-3.5 text-right">${statusBadge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 4. TT CUP FUNCTIONS
+    // =========================================================================
+
+    function setTTCupCountry(c) {
+      ttcupState.country = c;
+      ['all', 'czech', 'poland'].forEach(id => {
+        const btn = document.getElementById(`ttcup-country-${id}`);
+        if (btn) {
+          if (id === c) {
+            btn.className = 'px-3 py-1 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-300';
+          } else {
+            btn.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5';
+          }
+        }
+      });
+      fetchTTCup();
+    }
+
+    function setTTCupDate(val) {
+      ttcupState.date = val;
+      fetchTTCup();
+    }
+
+    function setTTCupHallFilter(val) {
+      ttcupState.hallId = val;
+      fetchTTCup();
+    }
+
+    function resetTTCupTimeframe() {
+      ttcupState.timeframeFrom = '00:00';
+      ttcupState.timeframeTo = '23:59';
+      document.getElementById('ttcup-time-from').value = '00:00';
+      document.getElementById('ttcup-time-to').value = '23:59';
+      fetchTTCup();
+    }
+
+    let ttcupSearchTimeout = null;
+    function handleTTCupSearch(val) {
+      clearTimeout(ttcupSearchTimeout);
+      ttcupSearchTimeout = setTimeout(() => {
+        ttcupState.searchQuery = val;
+        fetchTTCup();
+      }, 300);
+    }
+
+    function setTTCupStatusTab(s) {
+      ttcupState.statusTab = s;
+      ['all', 'live', 'upcoming', 'finished'].forEach(id => {
+        const btn = document.getElementById(`ttcup-status-tab-${id}`);
+        if (btn) {
+          if (id === s) {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/40';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white';
+          }
+        }
+      });
+      fetchTTCup();
+    }
+
+    function setTTCupViewMode(m) {
+      ttcupState.viewMode = m;
+      const cardsBtn = document.getElementById('ttcup-view-cards-btn');
+      const tableBtn = document.getElementById('ttcup-view-table-btn');
+      const cardsWrap = document.getElementById('ttcup-cards-wrapper');
+      const tableWrap = document.getElementById('ttcup-table-wrapper');
+
+      if (m === 'cards') {
+        cardsBtn.className = 'p-1.5 rounded-lg bg-blue-500/20 text-blue-300';
+        tableBtn.className = 'p-1.5 rounded-lg text-slate-400 hover:text-white';
+        cardsWrap.classList.remove('hidden');
+        tableWrap.classList.add('hidden');
+      } else {
+        tableBtn.className = 'p-1.5 rounded-lg bg-blue-500/20 text-blue-300';
+        cardsBtn.className = 'p-1.5 rounded-lg text-slate-400 hover:text-white';
+        tableWrap.classList.remove('hidden');
+        cardsWrap.classList.add('hidden');
+      }
+    }
+
+    async function fetchTTCup() {
+      try {
+        const params = new URLSearchParams();
+        if (ttcupState.date) params.set('date', ttcupState.date);
+        if (ttcupState.country && ttcupState.country !== 'all') params.set('country', ttcupState.country);
+        if (ttcupState.hallId && ttcupState.hallId !== 'all') params.set('hall', ttcupState.hallId);
+        if (ttcupState.statusTab && ttcupState.statusTab !== 'all') params.set('status', ttcupState.statusTab);
+        if (ttcupState.timeframeFrom && ttcupState.timeframeFrom !== '00:00') params.set('from_time', ttcupState.timeframeFrom);
+        if (ttcupState.timeframeTo && ttcupState.timeframeTo !== '23:59') params.set('to_time', ttcupState.timeframeTo);
+        if (ttcupState.searchQuery) params.set('search', ttcupState.searchQuery);
+
+        const res = await fetch(`/api/ttcup/matches?${params.toString()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        ttcupState.matches = data.matches || [];
+        ttcupState.tournaments = data.available_tournaments || [];
+
+        const counts = data.counts || {};
+        document.getElementById('stat-ttcup-total').textContent = counts.all || 0;
+        document.getElementById('stat-ttcup-live').textContent = counts.live || 0;
+        document.getElementById('stat-ttcup-upcoming').textContent = counts.upcoming || 0;
+        document.getElementById('stat-ttcup-finished').textContent = counts.finished || 0;
+
+        document.getElementById('ttcup-tab-count-all').textContent = counts.all || 0;
+        document.getElementById('ttcup-tab-count-live').textContent = counts.live || 0;
+        document.getElementById('ttcup-tab-count-upcoming').textContent = counts.upcoming || 0;
+        document.getElementById('ttcup-tab-count-finished').textContent = counts.finished || 0;
+
+        const hallSelect = document.getElementById('ttcup-hall-select');
+        if (hallSelect && ttcupState.tournaments.length > 0) {
+          const currentVal = ttcupState.hallId;
+          hallSelect.innerHTML = '<option value="all">Все доступные залы</option>' +
+            ttcupState.tournaments.map(t => `<option value="${t.hall_id}" ${String(t.hall_id) === String(currentVal) ? 'selected' : ''}>${t.name} (${t.country})</option>`).join('');
+        }
+
+        renderTTCup();
+      } catch (e) {
+        console.error('Error fetching TT Cup:', e);
+      }
+    }
+
+    function renderTTCup() {
+      const cardsWrapper = document.getElementById('ttcup-cards-wrapper');
+      const tableBody = document.getElementById('ttcup-matches-table-body');
+
+      cardsWrapper.innerHTML = ttcupState.matches.map(m => {
+        const timeDisplay = formatMatchTime(m.start_date, m.time);
+        const countryBadge = getCountryBadgeHtml(m.country, m.country === 'Poland' ? 'pl' : 'cz');
+        const statusBadge = getStatusBadgeHtml(m.status);
+
+        return `
+          <div class="glass-card rounded-2xl p-4 flex flex-col justify-between hover:border-blue-500/40 transition-all duration-200">
+            <div>
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5 mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-sm font-bold text-white bg-slate-800/80 px-2 py-0.5 rounded-lg">${timeDisplay}</span>
+                  ${countryBadge}
+                </div>
+                ${statusBadge}
+              </div>
+
+              <div class="text-xs text-blue-300 font-medium mb-3 truncate flex items-center justify-between">
+                <span class="truncate">${m.tournament_name}</span>
+                <span class="text-[11px] text-slate-400 font-mono">${m.stage}</span>
+              </div>
+
+              <div class="space-y-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold text-white truncate">${m.player1_name}</span>
+                  <span class="font-mono text-sm font-bold text-blue-400">${m.score !== '-' ? m.score.split(':')[0] || '0' : '-'}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold text-white truncate">${m.player2_name}</span>
+                  <span class="font-mono text-sm font-bold text-blue-400">${m.score !== '-' ? m.score.split(':')[1] || '0' : '-'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+              <span class="font-mono text-[11px] truncate max-w-[200px]">${m.set_scores ? `Сеты: ${m.set_scores}` : 'Счет по сетам отсутствует'}</span>
+              <button onclick="viewTTCupStandings(${m.hall_id}, '${m.tournament_name}')" class="text-blue-400 hover:text-blue-300 flex items-center gap-1 text-[11px] font-medium">
+                <span>Таблица</span> <i data-lucide="trophy" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      tableBody.innerHTML = ttcupState.matches.map(m => {
+        const timeDisplay = formatMatchTime(m.start_date, m.time);
+        const countryBadge = getCountryBadgeHtml(m.country, m.country === 'Poland' ? 'pl' : 'cz');
+        const statusBadge = getStatusBadgeHtml(m.status);
+
+        return `
+          <tr class="hover:bg-slate-900/50 transition-colors">
+            <td class="p-3.5 font-mono text-xs text-white font-semibold">${timeDisplay}</td>
+            <td class="p-3.5">${countryBadge}</td>
+            <td class="p-3.5 text-xs text-blue-300 font-medium">${m.tournament_name}</td>
+            <td class="p-3.5 text-xs text-slate-400 font-mono">${m.stage}</td>
+            <td class="p-3.5">
+              <div class="text-xs font-medium text-white">${m.player1_name}</div>
+              <div class="text-xs font-medium text-slate-400">${m.player2_name}</div>
+            </td>
+            <td class="p-3.5 text-center font-mono font-bold text-blue-400">${m.score}</td>
+            <td class="p-3.5 font-mono text-xs text-slate-400">${m.set_scores || '-'}</td>
+            <td class="p-3.5 text-right">${statusBadge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    async function viewTTCupStandings(hallId, tournName) {
+      const modal = document.getElementById('standings-modal');
+      const title = document.getElementById('standings-modal-title');
+      const content = document.getElementById('standings-modal-content');
+
+      title.innerHTML = `<i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i> ${tournName} — Турнирная таблица`;
+      content.innerHTML = '<div class="text-center py-8 text-slate-400">Загрузка таблицы...</div>';
+      modal.classList.remove('hidden');
+      lucide.createIcons();
+
+      try {
+        const res = await fetch(`/api/ttcup/schedule?date=${ttcupState.date}&hall=${hallId}`);
+        const data = await res.json();
+
+        if (!data.standings || data.standings.length === 0) {
+          content.innerHTML = '<div class="text-center py-8 text-slate-500">Турнирная таблица пока не заполнена или отсутствует на сайте.</div>';
+          return;
+        }
+
+        content.innerHTML = `
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="p-2.5">#</th>
+                  <th class="p-2.5">Игрок</th>
+                  <th class="p-2.5 text-right">Очки</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800">
+                ${data.standings.map(r => `
+                  <tr class="hover:bg-slate-800/40">
+                    <td class="p-2.5 font-bold font-mono text-amber-400">${r.pos}</td>
+                    <td class="p-2.5 font-semibold text-white">${r.player_name}</td>
+                    <td class="p-2.5 text-right font-mono font-bold text-emerald-400">${r.points}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (err) {
+        content.innerHTML = `<div class="text-center py-8 text-rose-400">Ошибка загрузки: ${err.message}</div>`;
+      }
+    }
+
+    function closeStandingsModal() {
+      document.getElementById('standings-modal').classList.add('hidden');
+    }
+
+    // =========================================================================
+    // 5. SETKA CUP FUNCTIONS
+    // =========================================================================
+
+    function resetHallsFilter() {
+      state.halls = [];
+      document.querySelectorAll('#halls-pills-container button').forEach(b => {
+        b.className = 'px-2 py-1 rounded-lg text-xs font-medium transition-all duration-200 border bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800';
+      });
+      fetchMatches();
+    }
+
+    function toggleHall(hallId, btn) {
+      const idx = state.halls.indexOf(hallId);
+      if (idx > -1) {
+        state.halls.splice(idx, 1);
+        btn.className = 'px-2 py-1 rounded-lg text-xs font-medium transition-all duration-200 border bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800';
+      } else {
+        state.halls.push(hallId);
+        btn.className = 'px-2 py-1 rounded-lg text-xs font-medium transition-all duration-200 border bg-emerald-500/20 border-emerald-500/40 text-emerald-300';
+      }
+      fetchMatches();
+    }
+
+    function setPeriodFilter(val) {
+      state.period = val;
+      fetchMatches();
+    }
+
+    function setStatusTab(tab) {
+      state.statusTab = tab;
+      ['all', 'live', 'upcoming', 'finished'].forEach(t => {
+        const btn = document.getElementById(`status-tab-${t}`);
+        if (btn) {
+          if (t === tab) {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white';
+          }
+        }
+      });
+      fetchMatches();
+    }
+
+    function setViewMode(m) {
+      state.viewMode = m;
+      const cardsBtn = document.getElementById('view-cards-btn');
+      const tableBtn = document.getElementById('view-table-btn');
+      const cardsWrap = document.getElementById('cards-wrapper');
+      const tableWrap = document.getElementById('table-wrapper');
+
+      if (m === 'cards') {
+        cardsBtn.className = 'p-1.5 rounded-lg bg-emerald-500/20 text-emerald-300';
+        tableBtn.className = 'p-1.5 rounded-lg text-slate-400 hover:text-white';
+        cardsWrap.classList.remove('hidden');
+        tableWrap.classList.add('hidden');
+      } else {
+        tableBtn.className = 'p-1.5 rounded-lg bg-emerald-500/20 text-emerald-300';
+        cardsBtn.className = 'p-1.5 rounded-lg text-slate-400 hover:text-white';
+        tableWrap.classList.remove('hidden');
+        cardsWrap.classList.add('hidden');
+      }
+    }
+
+    let searchTimeout = null;
+    document.getElementById('search-input')?.addEventListener('input', e => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        state.searchQuery = e.target.value;
+        fetchMatches();
+      }, 300);
+    });
+
+    document.getElementById('date-input')?.addEventListener('change', e => {
+      state.date = e.target.value;
+      fetchMatches();
+    });
+
+    async function fetchMetadata() {
+      try {
+        const [hallsRes, periodsRes] = await Promise.all([
+          fetch('/api/halls'),
+          fetch('/api/periods')
+        ]);
+        if (hallsRes.ok) {
+          state.allHalls = await hallsRes.json();
+          renderHallsPills();
+        }
+        if (periodsRes.ok) {
+          state.allPeriods = await periodsRes.json();
+          renderPeriodsDropdown();
+        }
+      } catch (e) {
+        console.error('Metadata error:', e);
+      }
+    }
+
+    function renderHallsPills() {
+      const container = document.getElementById('halls-pills-container');
+      if (!container) return;
+      container.innerHTML = state.allHalls.map(h => `
+        <button onclick="toggleHall(${h.id}, this)" class="px-2 py-1 rounded-lg text-xs font-medium transition-all duration-200 border bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800">
+          ${h.name}
+        </button>
+      `).join('');
+    }
+
+    function renderPeriodsDropdown() {
+      const select = document.getElementById('period-select');
+      if (!select) return;
+      select.innerHTML = '<option value="all">Все периоды (сутки)</option>' +
+        state.allPeriods.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    }
+
+    async function fetchMatches() {
+      try {
+        const params = new URLSearchParams();
+        if (state.date) params.set('date', state.date);
+        if (state.halls.length > 0) params.set('hall', state.halls.join(','));
+        if (state.period && state.period !== 'all') params.set('period', state.period);
+        if (state.statusTab && state.statusTab !== 'all') params.set('status', state.statusTab);
+        if (state.searchQuery) params.set('search', state.searchQuery);
+
+        const res = await fetch(`/api/matches?${params.toString()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        state.matches = data.matches || [];
+        const counts = data.counts || {};
+
+        document.getElementById('stat-total').textContent = counts.all || 0;
+        document.getElementById('stat-live').textContent = counts.live || 0;
+        document.getElementById('stat-upcoming').textContent = counts.upcoming || 0;
+        document.getElementById('stat-finished').textContent = counts.finished || 0;
+
+        document.getElementById('tab-count-all').textContent = counts.all || 0;
+        document.getElementById('tab-count-live').textContent = counts.live || 0;
+        document.getElementById('tab-count-upcoming').textContent = counts.upcoming || 0;
+        document.getElementById('tab-count-finished').textContent = counts.finished || 0;
+
+        renderMatches();
+      } catch (err) {
+        console.error('Error fetching Setka Cup matches:', err);
+      }
+    }
+
+    function renderMatches() {
+      const cardsWrapper = document.getElementById('cards-wrapper');
+      const tableBody = document.getElementById('matches-table-body');
+
+      cardsWrapper.innerHTML = state.matches.map(m => {
+        const timeDisplay = formatMatchTime(m.start_date, m.time);
+        const statusBadge = getStatusBadgeHtml(m.status);
+
+        return `
+          <div class="glass-card rounded-2xl p-4 flex flex-col justify-between hover:border-emerald-500/40 transition-all duration-200">
+            <div>
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5 mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-sm font-bold text-white bg-slate-800/80 px-2 py-0.5 rounded-lg">${timeDisplay}</span>
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs">
+                    ${m.hall ? m.hall.name : 'Court'}
+                  </span>
+                </div>
+                ${statusBadge}
+              </div>
+
+              <div class="text-xs text-emerald-300 font-medium mb-3 truncate flex items-center justify-between">
+                <span class="truncate">${m.tournament_name || m.stage}</span>
+                <span class="text-[11px] text-slate-400 font-mono">${m.period ? m.period.name : ''}</span>
+              </div>
+
+              <div class="space-y-2 bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    ${m.player1.photo_url ? `<img src="${m.player1.photo_url}" class="w-6 h-6 rounded-full object-cover border border-slate-700 flex-shrink-0" onerror="this.style.display='none'">` : '<div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400">1</div>'}
+                    <span class="text-xs font-semibold text-white truncate">${m.player1.name}</span>
+                  </div>
+                  <span class="font-mono text-sm font-bold text-emerald-400">${m.score_sets ? m.score_sets.player1 : '0'}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 truncate">
+                    ${m.player2.photo_url ? `<img src="${m.player2.photo_url}" class="w-6 h-6 rounded-full object-cover border border-slate-700 flex-shrink-0" onerror="this.style.display='none'">` : '<div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400">2</div>'}
+                    <span class="text-xs font-semibold text-white truncate">${m.player2.name}</span>
+                  </div>
+                  <span class="font-mono text-sm font-bold text-emerald-400">${m.score_sets ? m.score_sets.player2 : '0'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+              <span class="font-mono text-[11px] truncate max-w-[200px]">
+                ${m.score_points && m.score_points.length > 0 ? `Сеты: ${m.score_points.map(p => `${p.p1}:${p.p2}`).join(', ')}` : 'Счет по сетам отсутствует'}
+              </span>
+              ${m.hall && m.hall.stream_url ? `
+                <a href="${m.hall.stream_url}" target="_blank" class="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 text-[11px] font-medium">
+                  <span>Трансляция</span> <i data-lucide="video" class="w-3 h-3"></i>
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      tableBody.innerHTML = state.matches.map(m => {
+        const timeDisplay = formatMatchTime(m.start_date, m.time);
+        const statusBadge = getStatusBadgeHtml(m.status);
+
+        return `
+          <tr class="hover:bg-slate-900/50 transition-colors">
+            <td class="p-3.5 font-mono text-xs text-white font-semibold">${timeDisplay}</td>
+            <td class="p-3.5 text-xs text-emerald-300 font-medium">${m.hall ? m.hall.name : '-'}</td>
+            <td class="p-3.5 text-xs text-slate-300">${m.tournament_name || m.stage}</td>
+            <td class="p-3.5 text-xs font-medium text-white">${m.player1.name}</td>
+            <td class="p-3.5 text-center font-mono font-bold text-emerald-400">${m.score_sets ? m.score_sets.formatted : '0:0'}</td>
+            <td class="p-3.5 text-xs font-medium text-slate-300">${m.player2.name}</td>
+            <td class="p-3.5 font-mono text-xs text-slate-400">${m.score_points ? m.score_points.map(p => `${p.p1}:${p.p2}`).join(', ') : '-'}</td>
+            <td class="p-3.5 text-right">${statusBadge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 6. TIMER & INITIALIZATION
+    // =========================================================================
+
+    function changeRefreshInterval(sec) {
+      refreshInterval = parseInt(sec, 10);
+      countdown = refreshInterval;
+      startCountdownTimer();
+    }
+
+    function startCountdownTimer() {
+      clearInterval(countdownTimerId);
+      const badge = document.getElementById('countdown-badge');
+
+      if (refreshInterval <= 0) {
+        if (badge) badge.textContent = 'M';
+        return;
+      }
+
+      countdown = refreshInterval;
+      countdownTimerId = setInterval(() => {
+        countdown--;
+        if (badge) badge.textContent = countdown;
+        if (countdown <= 0) {
+          countdown = refreshInterval;
+          triggerManualRefresh();
+        }
+      }, 1000);
+    }
+
+    function triggerManualRefresh() {
+      const icon = document.getElementById('refresh-icon');
+      if (icon) icon.classList.add('animate-spin');
+      fetchCurrentPlatformData();
+      setTimeout(() => {
+        if (icon) icon.classList.remove('animate-spin');
+      }, 800);
+    }
+
+    // Initialization on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Set today as default date on all date pickers
+      const today = new Date().toISOString().split('T')[0];
+
+      const dInput = document.getElementById('date-input');
+      if (dInput) dInput.value = today;
+
+      const ttcupDate = document.getElementById('ttcup-date-input');
+      if (ttcupDate) ttcupDate.value = today;
+
+      const lpFrom = document.getElementById('leaguepro-date-from');
+      const lpTo = document.getElementById('leaguepro-date-to');
+      if (lpFrom) lpFrom.value = today;
+      if (lpTo) lpTo.value = today;
+
+      const slFrom = document.getElementById('sportliga-date-from');
+      const slTo = document.getElementById('sportliga-date-to');
+      if (slFrom) slFrom.value = today;
+      if (slTo) slTo.value = today;
+
+      const uFrom = document.getElementById('unified-date-from');
+      const uTo = document.getElementById('unified-date-to');
+      if (uFrom) uFrom.value = today;
+      if (uTo) uTo.value = today;
+
+      // Restore saved timezone
+      const tzSelect = document.getElementById('timezone-select');
+      if (tzSelect && state.timeZone) {
+        tzSelect.value = state.timeZone;
+      }
+
+      lucide.createIcons();
+      startCountdownTimer();
+
+      // Preload Setka metadata and initial view
+      checkTTCupCookieStatus();
+      fetchMetadata();
+      fetchUnifiedMatches();
+    });
+  </script>
+
+  <!-- TT CUP COOKIE CONFIG MODAL -->
+  <div id="ttcup-cookie-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div class="glass-panel w-full max-w-lg rounded-3xl p-6 border border-slate-700 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <i data-lucide="cookie" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Настройка Cookie TT Cup (ttcup.com)</h3>
+            <p class="text-[11px] text-slate-400">Обход проверки Cloudflare и reCAPTCHA</p>
+          </div>
+        </div>
+        <button onclick="closeTTCupCookieModal()" class="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div class="bg-slate-950/70 rounded-xl p-3 border border-slate-800/80 space-y-1 text-slate-300">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">Текущий статус:</span>
+            <span id="ttcup-cookie-modal-status" class="font-mono font-semibold text-slate-300 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-slate-500"></span> Проверка...
+            </span>
+          </div>
+          <div id="ttcup-cookie-modal-snippet" class="text-[11px] text-slate-500 font-mono truncate hidden"></div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-medium text-slate-300 flex items-center justify-between">
+            <span>Вставьте значение Cookie:</span>
+            <span class="text-[10px] text-slate-500">PHPSESSID=...; cf_clearance=...</span>
+          </label>
+          <textarea
+            id="ttcup-cookie-modal-input"
+            rows="3"
+            placeholder="Вставьте сюда заголовок Cookie из браузера (например: PHPSESSID=abc123xyz; cf_clearance=...)"
+            class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl p-3 text-xs text-white font-mono focus:outline-none placeholder-slate-600"
+          ></textarea>
+        </div>
+
+        <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-[11px] text-amber-300/90 leading-relaxed">
+          💡 <strong>Как получить:</strong> Откройте <a href="https://ttcup.com/schedule/" target="_blank" class="underline text-amber-200">ttcup.com/schedule</a> в браузере. Нажмите <code>F12</code> &rarr; вкладка <code>Network</code> (или <code>Application &rarr; Cookies</code>), скопируйте заголовок Cookie и вставьте выше.
+        </div>
+
+        <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-800">
+          <button
+            onclick="clearTTCupCookie()"
+            class="px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 font-medium text-xs transition-colors"
+          >
+            Сбросить Cookie
+          </button>
+          <div class="flex items-center gap-2">
+            <button
+              onclick="closeTTCupCookieModal()"
+              class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-xs transition-colors"
+            >
+              Отмена
+            </button>
+            <button
+              onclick="saveTTCupCookie()"
+              class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold text-xs shadow-md shadow-amber-900/30 transition-all flex items-center gap-1.5"
+            >
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              Сохранить и активировать
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
+'''
+
+with open('static/index.html', 'w', encoding='utf-8') as f:
+    f.write(frontend_code)
+
+print("Successfully written static/index.html with all 5 sections, timezone engine, Liga Pro branding, and SVG country flags!")

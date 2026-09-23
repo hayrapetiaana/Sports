@@ -1,0 +1,127 @@
+{
+  "id": 77762,
+  "name_ru": "Турнир A4. Лига 350-400",
+  "name_en": "Tournament A4. League 350-400",
+  "start_at": "2026-09-18T20:45:00Z",
+  "sides_count": 5,
+  "division": null,
+  "status": 1,
+  "is_throw_meets": false,
+  "sides": [
+    {
+      "id": 1824,
+      "is_tba": false,
+      "side_type_id": 2,
+      "player": {
+        "avatar": "/media/players/78/1678.jpg",
+        "photo": "/media/players/78/1678.jpg",
+        "id": 1678,
+        "first_name_ru": "Павел",
+        "first_name_en": "Pavel",
+        "surname_ru": "Егоров",
+        "surname_en": "Egorov",
+        "patronymic_ru": "Евгеньевич",
+        "patronymic_en": "Evgenevich",
+        "short_name_ru": "Егоров П. Е.",
+        "short_name_en": "Egorov P. E."
+      },
+      "team": null,
+      "couple": null,
+      "rating_before_tournament": 395.71,
+      "rating_after_tournament": null,
+      "place": null
+    },
+    {
+      "id": 905,
+      "is_tba": false,
+      "side_type_id": 2,
+      "player": {
+        "avatar": "/media/players/19/419.jpg",
+        "photo": "/media/players/19/419.jpg",
+        "id": 419,
+        "first_name_ru": "Олег",
+        "first_name_en": "Oleg",
+        "surname_ru": "Попов",
+        "surname_en": "Popov",
+        "patronymic_ru": "Александрович",
+        "patronymic_en": "Aleksandrovich",
+        "short_name_ru": "Попов О. А.",
+        "short_name_en": "Popov O. A."
+      },
+      "team": null,
+      "couple": null,
+      "rating_before_tournament": 437.36,
+      "rating_after_tournament": null,
+      "place": null
+    },
+    {
+      "id": 2356,
+      "is_tba": false,
+      "side_type_id": 2,
+      "player": {
+        "avatar": "/media/players/64/2164.jpg",
+        "photo": "/media/players/64/2164.jpg",
+        "id": 2164,
+        "first_name_ru": "Олег",
+        "first_name_en": "Oleg",
+        "surname_ru": "Данилов",
+        "surname_en": "Danilov",
+        "patronymic_ru": "Владиславович",
+        "patronymic_en": "Vladislavovich",
+        "short_name_ru": "Данилов О. В.",
+        "short_name_en": "Danilov O. V."
+      },
+      "team": null,
+      "couple": null,
+      "rating_before_tournament": 373.54,
+      "rating_after_tournament": null,
+      "place": null
+    },
+    {
+      "id": 918,
+      "is_tba": false,
+      "side_type_id": 2,
+      "player": {
+        "avatar": "/media/players/90/490.jpg",
+        "photo": "/media/players/90/490.jpg",
+        "id": 490,
+        "first_name_ru": "Андрей",
+        "first_name_en": "Andrei",
+        "surname_ru": "Янковский",
+        "surname_en": "Iankovskii",
+        "patronymic_ru": "Вячеславович",
+        "patronymic_en": "Viacheslavovich",
+        "short_name_ru": "Янковский А. В.",
+        "short_name_en": "Iankovskii A. V."
+      },
+      "team": null,
+      "couple": null,
+      "rating_before_tournament": 398.1,
+      "rating_after_tournament": null,
+      "place": null
+    },
+    {
+      "id": 2647,
+      "is_tba": false,
+      "side_type_id": 2,
+      "player": {
+        "avatar": "/media/players/99/2299.jpg",
+        "photo": "/media/players/99/2299.jpg",
+        "id": 2299,
+        "first_name_ru": "Александр",
+        "first_name_en": "Aleksandr",
+        "surname_ru": "Бондаренко",
+        "surname_en": "Bondarenko",
+        "patronymic_ru": "Сергеевич",
+        "patronymic_en": "Sergeevich",
+        "short_name_ru": "Бондаренко А. С.",
+        "short_name_en": "Bondarenko A. S."
+      },
+      "team": null,
+      "couple": null,
+      "rating_before_tournament": 372.85,
+      "rating_after_tournament": null,
+      "place": null
+    }
+  ]
+}

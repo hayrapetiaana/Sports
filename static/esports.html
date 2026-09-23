@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full bg-[#080c14] text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Esports Matches Monitor | Liquipedia & HLTV</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23818cf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='6 2 18 2 18 6 6 6'%3E%3C/polygon%3E%3Crect width='20' height='12' x='2' y='6' rx='2'%3E%3C/rect%3E%3Ccircle cx='8' cy='12' r='2'%3E%3C/circle%3E%3Cpath d='M16 12h.01'%3E%3C/path%3E%3Cpath d='M12 16v.01'%3E%3C/path%3E%3C/svg%3E">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+              950: '#1e1b4b',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #080c14; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+    .glass-panel {
+      background: rgba(13, 19, 33, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .glass-card:hover {
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+
+    @keyframes livePulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    .live-dot {
+      animation: livePulse 1.8s infinite;
+    }
+  </style>
+</head>
+<body class="min-h-full flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- TOP APP BAR -->
+  <header class="sticky top-0 z-40 bg-[#080c14]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
+    <div class="w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6">
+      <div class="flex items-center justify-between h-16 gap-2">
+        
+        <!-- Logo & Platform Links -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-500 to-rose-500 flex items-center justify-center shadow-lg shadow-indigo-950/60 p-0.5">
+            <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+              <i data-lucide="gamepad-2" class="w-5 h-5 text-indigo-400"></i>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
+                <span>ESPORTS<span class="text-indigo-400">PARSER</span></span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-mono font-medium">LIQUIPEDIA + HLTV</span>
+              </h1>
+            </div>
+            <p class="text-[11px] text-slate-400 hidden sm:block">Dota 2 • CS • Valorant • LoL • 27 Disciplines • Streams • Reminders</p>
+          </div>
+        </div>
+
+        <!-- Navigation Switcher (Table Tennis vs Esports) -->
+        <div class="flex items-center p-1 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-inner mx-1 shrink-0">
+          <a href="/" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all duration-200">
+            <i data-lucide="table-tennis" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Настольный Теннис</span>
+          </a>
+          <a href="/esports" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-950/50 transition-all duration-200">
+            <i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-300"></i>
+            <span>Киберспорт</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-200 font-mono font-bold" id="header-total-count">0</span>
+          </a>
+          <button 
+            id="tab-btn-removed" 
+            onclick="toggleRemovedTab()" 
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-xs transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800/60"
+            title="Матчи, удаленные скрапером или не обновлявшиеся > 5 минут"
+          >
+            <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-400"></i>
+            <span class="hidden md:inline">Удаленные</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-rose-950 border border-rose-800/60 text-rose-300 font-mono font-bold" id="removed-badge-count">0</span>
+          </button>
+        </div>
+
+        <!-- Header Actions: HLTV Settings, Checkbox Filter, Notifications, Refresh -->
+        <div class="flex items-center gap-2">
+          <!-- Cookie Settings Modal Button -->
+          <button 
+            onclick="openCookieModal()" 
+            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-amber-400 text-xs font-medium transition-all"
+            title="Настройка Cookie для HLTV.org и Liquipedia"
+          >
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span class="hidden lg:inline">Cookie (HLTV / Liquipedia)</span>
+          </button>
+
+          <!-- Checked Matches Counter Button -->
+          <button 
+            id="header-checked-btn" 
+            onclick="toggleFilterCheckedOnly()" 
+            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-medium transition-all"
+            title="Фильтр: показывать только отмеченные матчи"
+          >
+            <i data-lucide="check-square" class="w-3.5 h-3.5 text-indigo-400"></i>
+            <span class="hidden md:inline">В эфире:</span>
+            <span id="header-checked-count" class="font-mono font-bold text-indigo-400">0</span>
+          </button>
+
+          <!-- Notifications Center Bell -->
+          <div class="relative">
+            <button
+              id="header-notif-btn"
+              onclick="toggleNotificationsPanel()"
+              class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition-colors relative"
+              title="Центр уведомлений и напоминаний"
+            >
+              <i data-lucide="bell" class="w-4 h-4 text-slate-300"></i>
+              <span id="notif-badge-count" class="hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-slate-950 font-bold text-[9px] flex items-center justify-center">0</span>
+            </button>
+
+            <!-- Notifications Dropdown Panel -->
+            <div id="notifications-panel" class="hidden absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-4 z-50 space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="bell-ring" class="w-4 h-4 text-amber-400"></i>
+                  <span class="font-semibold text-sm text-white">Активные напоминания</span>
+                </div>
+                <button onclick="clearAllReminders()" class="text-[11px] text-slate-400 hover:text-rose-400 transition-colors">Очистить все</button>
+              </div>
+
+              <!-- Reminders List -->
+              <div id="reminders-list" class="max-h-60 overflow-y-auto space-y-2 pr-1">
+                <p class="text-xs text-slate-500 text-center py-4">Нет активных напоминаний о матчах</p>
+              </div>
+
+              <!-- Finished checked matches feed -->
+              <div class="border-t border-slate-800 pt-2.5">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-medium text-slate-400">Завершенные проверенные</span>
+                  <span id="finished-checked-count" class="text-[11px] text-emerald-400 font-mono">0</span>
+                </div>
+                <div id="finished-checked-list" class="max-h-40 overflow-y-auto space-y-1.5 text-xs">
+                  <p class="text-slate-600 text-center py-2">Пока нет завершенных матчей</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Refresh Button -->
+          <button 
+            id="btn-refresh" 
+            onclick="fetchMatches(true)" 
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition shadow-lg shadow-indigo-900/30"
+          >
+            <i data-lucide="refresh-cw" id="refresh-icon" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Обновить</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 py-4 space-y-4">
+
+    <!-- DISCIPLINES SELECTOR (CAROUSEL / PILL GRID) -->
+    <section class="glass-panel rounded-2xl p-3 sm:p-4 shadow-lg">
+      <div class="flex items-center justify-between mb-2.5">
+        <div class="flex items-center gap-2">
+          <i data-lucide="layout-grid" class="w-4 h-4 text-indigo-400"></i>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Вид киберспорта</span>
+          <span class="text-[11px] text-slate-500 hidden sm:inline">(Выберите конкретную игру или все сразу)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="scrollDisciplines(-1)" class="p-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300" title="Влево">
+            <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+          </button>
+          <button onclick="scrollDisciplines(1)" class="p-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300" title="Вправо">
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Horizontal scrollable list of 27 disciplines -->
+      <div id="disciplines-container" class="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth">
+        <!-- Will be populated dynamically by JS, default active: "all" -->
+        <button 
+          onclick="selectDiscipline('all')" 
+          id="disc-btn-all" 
+          class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 bg-indigo-600 text-white shadow-md shadow-indigo-900/50 shrink-0"
+        >
+          <i data-lucide="globe" class="w-4 h-4 text-amber-300"></i>
+          <span>Все виды киберспорта</span>
+          <span id="disc-count-all" class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-950 font-mono font-bold">0</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- FILTER & CONTROL TOOLBAR -->
+    <section class="glass-panel rounded-2xl p-3 sm:p-4 shadow-lg">
+      <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        
+        <!-- Left: Status Tabs & HLTV Date Picker -->
+        <div class="flex flex-wrap items-center gap-2">
+          
+          <!-- Status Filter Tabs -->
+          <div class="flex items-center p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs">
+            <button onclick="setStatusFilter('all')" id="status-btn-all" class="px-2.5 py-1 rounded-lg font-medium bg-indigo-600 text-white">Все (<span id="status-cnt-all">0</span>)</button>
+            <button onclick="setStatusFilter('live')" id="status-btn-live" class="px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-rose-500 live-dot"></span>
+              <span>Live (<span id="status-cnt-live">0</span>)</span>
+            </button>
+            <button onclick="setStatusFilter('upcoming')" id="status-btn-upcoming" class="px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white">Ожидаются (<span id="status-cnt-upcoming">0</span>)</button>
+            <button onclick="setStatusFilter('finished')" id="status-btn-finished" class="px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white">Завершенные (<span id="status-cnt-finished">0</span>)</button>
+            <button onclick="setStatusFilter('draw')" id="status-btn-draw" class="px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white">Ничьи (<span id="status-cnt-draw">0</span>)</button>
+          </div>
+
+          <!-- Date Selector (HLTV & Match Filter) -->
+          <div class="flex items-center gap-1.5 bg-slate-900 px-3 py-1 rounded-xl border border-slate-800 text-xs">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-400"></i>
+            <span class="text-slate-400 text-[11px]">Дата (HLTV):</span>
+            <input 
+              type="date" 
+              id="hltv-date-picker" 
+              onchange="onDateChanged()" 
+              class="bg-transparent text-white font-mono text-xs focus:outline-none cursor-pointer"
+            >
+            <button onclick="setDateOffset(0)" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">Сегодня</button>
+            <button onclick="setDateOffset(1)" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">+1 день</button>
+            <button onclick="setDateOffset(2)" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">+2 дня</button>
+          </div>
+
+          <!-- Timezone Selector -->
+          <div class="flex items-center gap-1 bg-slate-900 px-2.5 py-1 rounded-xl border border-slate-800 text-xs">
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
+            <select id="tz-select" onchange="changeTimezone()" class="bg-transparent text-slate-300 text-xs focus:outline-none cursor-pointer">
+              <option value="local" class="bg-slate-900">Местное время</option>
+              <option value="Europe/Moscow" class="bg-slate-900">МСК (UTC+3)</option>
+              <option value="UTC" class="bg-slate-900">UTC</option>
+              <option value="Europe/Berlin" class="bg-slate-900">CET (UTC+1/2)</option>
+              <option value="America/New_York" class="bg-slate-900">EST (UTC-5)</option>
+            </select>
+          </div>
+
+        </div>
+
+        <!-- Right: Search Bar & View Mode Toggle -->
+        <div class="flex items-center gap-2">
+          
+          <!-- Search input -->
+          <div class="relative flex-1 sm:w-64">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input 
+              type="text" 
+              id="search-input" 
+              oninput="renderMatches()" 
+              placeholder="Команда, тег, турнир..." 
+              class="w-full pl-9 pr-7 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
+            >
+            <button onclick="clearSearch()" id="search-clear-btn" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+              <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+          </div>
+
+          <!-- View Mode: Cards vs Table -->
+          <div class="flex items-center p-1 bg-slate-900 rounded-xl border border-slate-800">
+            <button onclick="setViewMode('cards')" id="view-btn-cards" class="p-1 rounded-lg bg-indigo-600 text-white" title="Вид: Карточки">
+              <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="setViewMode('table')" id="view-btn-table" class="p-1 rounded-lg text-slate-400 hover:text-white" title="Вид: Таблица">
+              <i data-lucide="table-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+
+          <!-- Auto-refresh interval select -->
+          <select id="refresh-interval-select" onchange="changeRefreshInterval()" class="bg-slate-900 text-slate-300 px-2 py-1.5 rounded-xl border border-slate-800 text-xs focus:outline-none">
+            <option value="30">Авто: 30с</option>
+            <option value="60" selected>Авто: 1м</option>
+            <option value="120">Авто: 2м</option>
+            <option value="300">Авто: 5м</option>
+            <option value="0">Выкл</option>
+          </select>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- MATCHES CONTENT AREA (ACTIVE TAB) -->
+    <div id="matches-section" class="space-y-4">
+      
+      <!-- Statistics Bar -->
+      <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+        <div class="flex items-center gap-3">
+          <span>Найдено матчей: <strong id="stats-total" class="text-white">0</strong></span>
+          <span>•</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500 live-dot"></span> В игре: <strong id="stats-live" class="text-rose-400">0</strong></span>
+          <span>•</span>
+          <span>Отмечено: <strong id="stats-checked" class="text-indigo-400">0</strong></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="last-updated-text" class="text-slate-500 text-[11px]">Обновлено: никогда</span>
+        </div>
+      </div>
+
+      <!-- CARDS CONTAINER -->
+      <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+        <!-- Cards rendered dynamically -->
+      </div>
+
+      <!-- TABLE CONTAINER -->
+      <div id="table-container" class="hidden glass-panel rounded-2xl overflow-hidden shadow-xl border border-slate-800">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-900/90 text-slate-400 uppercase text-[10px] font-semibold tracking-wider border-b border-slate-800">
+              <tr>
+                <th class="p-3 w-10 text-center">Контроль</th>
+                <th class="p-3">Дисциплина</th>
+                <th class="p-3">Время / Статус</th>
+                <th class="p-3">Формат</th>
+                <th class="p-3 text-right">Команда 1 (Полное / Тег)</th>
+                <th class="p-3 text-center w-16">Счет</th>
+                <th class="p-3">Команда 2 (Полное / Тег)</th>
+                <th class="p-3">Турнир</th>
+                <th class="p-3 text-center">Трансляции</th>
+                <th class="p-3 text-center">Напоминание</th>
+              </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-slate-800/60">
+              <!-- Table rows rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Empty State / Loader -->
+      <div id="empty-state" class="hidden glass-panel rounded-2xl p-12 text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
+          <i data-lucide="inbox" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-base font-semibold text-white mb-1">Матчи не найдены</h3>
+        <p class="text-xs text-slate-400 max-w-sm mx-auto">По выбранным фильтрам или дисциплине сейчас нет доступных матчей. Попробуйте сменить фильтр или обновить данные.</p>
+      </div>
+
+    </div>
+
+    <!-- REMOVED MATCHES SECTION (DEDICATED VIEW) -->
+    <div id="removed-section" class="hidden space-y-4">
+      <div class="glass-panel rounded-2xl p-4 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="trash-2" class="w-5 h-5 text-rose-400"></i>
+            <span>Удаленные матчи (Архив за 24 часа)</span>
+          </h2>
+          <p class="text-xs text-slate-400">Матчи, которые исчезли с Liquipedia/HLTV или не получали обновлений > 5 минут. Вы можете восстановить их обратно в активный список.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="restoreAllRemovedMatches()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition">
+            Восстановить все
+          </button>
+          <button onclick="clearRemovedMatches()" class="px-3 py-1.5 rounded-xl bg-rose-600/80 hover:bg-rose-500 text-white text-xs font-medium transition">
+            Очистить архив
+          </button>
+        </div>
+      </div>
+
+      <div id="removed-list-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MATCH START REMINDER MODAL -->
+  <div id="reminder-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-5 shadow-2xl border border-slate-700 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="alarm-clock" class="w-5 h-5 text-indigo-400"></i>
+          <h3 class="font-bold text-sm text-white">Установить напоминание</h3>
+        </div>
+        <button onclick="closeReminderModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-800 space-y-1">
+        <div id="modal-match-discipline" class="text-[10px] uppercase font-bold text-indigo-400 tracking-wider">DOTA 2</div>
+        <div id="modal-match-teams" class="font-semibold text-sm text-white">Team 1 vs Team 2</div>
+        <div id="modal-match-time" class="text-xs text-slate-400 flex items-center gap-1.5">
+          <i data-lucide="clock" class="w-3 h-3 text-slate-500"></i>
+          <span>Начало: 14:00</span>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-xs font-medium text-slate-300">Напомнить за:</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="setReminderOption(15)" class="reminder-opt-btn px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white">15 мин</button>
+          <button onclick="setReminderOption(10)" class="reminder-opt-btn px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white">10 мин</button>
+          <button onclick="setReminderOption(5)" class="reminder-opt-btn px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white">5 мин</button>
+          <button onclick="setReminderOption(1)" class="reminder-opt-btn px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white">1 мин</button>
+          <button onclick="setReminderOption(0)" class="reminder-opt-btn px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white">В момент старта</button>
+          <div class="flex items-center bg-slate-900 rounded-xl border border-slate-800 px-2 py-1">
+            <input type="number" id="custom-minutes-input" min="1" max="180" placeholder="Свое" class="w-full bg-transparent text-xs text-white focus:outline-none">
+            <span class="text-[10px] text-slate-500">мин</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="closeReminderModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300">Отмена</button>
+        <button onclick="confirmReminder()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-medium text-white shadow-lg shadow-indigo-900/30">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COOKIE SETTINGS MODAL (HLTV & LIQUIPEDIA) -->
+  <div id="cookie-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-lg rounded-2xl p-5 shadow-2xl border border-slate-700 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-5 h-5 text-amber-400"></i>
+          <h3 class="font-bold text-sm text-white">Настройки Cloudflare Cookie</h3>
+        </div>
+        <button onclick="closeCookieModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Cookie Platform Tabs -->
+      <div class="flex items-center p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs">
+        <button onclick="switchCookieTab('hltv')" id="cookie-tab-hltv" class="flex-1 py-1.5 rounded-lg font-semibold bg-amber-600 text-white transition">
+          HLTV.org (CS)
+        </button>
+        <button onclick="switchCookieTab('liquipedia')" id="cookie-tab-liquipedia" class="flex-1 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition">
+          Liquipedia.net (27 игр)
+        </button>
+      </div>
+
+      <!-- HLTV TAB CONTENT -->
+      <div id="cookie-content-hltv" class="space-y-3">
+        <p class="text-xs text-slate-300 leading-relaxed">
+          HLTV.org защищен Cloudflare. Если матчи по CS с HLTV не загружаются, экспортируйте cookies через браузерное расширение (например <em>Cookie-Editor</em>) в формате JSON или скопируйте заголовок Cookie и вставьте ниже:
+        </p>
+        <textarea 
+          id="hltv-cookie-input" 
+          rows="5" 
+          placeholder='[&#10;  { "name": "cf_clearance", "value": "..." }&#10;] ИЛИ обычная строка: cf_clearance=...; __cf_bm=...' 
+          class="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500"
+        ></textarea>
+        <div class="flex items-center justify-between text-[11px] text-slate-400">
+          <span id="hltv-cookie-status">Статус: проверяется...</span>
+          <div class="flex items-center gap-2">
+            <button onclick="closeCookieModal()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300">Закрыть</button>
+            <button onclick="saveHltvCookie()" class="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-medium">Сохранить HLTV</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIQUIPEDIA TAB CONTENT -->
+      <div id="cookie-content-liquipedia" class="hidden space-y-3">
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Если Liquipedia временно ограничила доступ (429 Rate Limit), откройте <em>liquipedia.net</em> в браузере, пройдите капчу и скопируйте cookies из расширения <em>Cookie-Editor</em> или заголовок Cookie:
+        </p>
+        <textarea 
+          id="liquipedia-cookie-input" 
+          rows="5" 
+          placeholder='[&#10;  { "name": "cf_clearance", "value": "..." }&#10;] ИЛИ строка Cookie' 
+          class="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+        ></textarea>
+        <div class="flex items-center justify-between text-[11px] text-slate-400">
+          <span id="liquipedia-cookie-status">Статус: проверяется...</span>
+          <div class="flex items-center gap-2">
+            <button onclick="closeCookieModal()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300">Закрыть</button>
+            <button onclick="saveLiquipediaCookie()" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium">Сохранить Liquipedia</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- SCRIPTS -->
+  <script>
+    // --- STATE MANAGEMENT ---
+    let state = {
+      matches: [],
+      disciplines: [],
+      selectedDiscipline: 'all',
+      selectedStatus: 'all',
+      selectedDate: new Date().toISOString().split('T')[0],
+      timezone: 'local',
+      viewMode: 'cards', // 'cards' | 'table'
+      checkedOnly: false,
+      searchQuery: '',
+      activeTab: 'matches', // 'matches' | 'removed'
+      removedMatches: [],
+      checkedMatchIds: new Set(JSON.parse(localStorage.getItem('esports_checked_ids') || '[]')),
+      reminders: JSON.parse(localStorage.getItem('esports_reminders') || '[]'), // [{ matchId, matchTitle, startTime, alertTime, minutesBefore, triggered }]
+      finishedCheckedMatches: JSON.parse(localStorage.getItem('esports_finished_checked') || '[]'),
+      refreshIntervalSec: 60,
+      refreshTimer: null,
+      selectedReminderMatch: null,
+      selectedReminderMinutes: 5,
+    };
+
+    // All 27 disciplines metadata from user screenshot
+    const DISCIPLINES_DEF = [
+      { id: 'dota2', name: 'Dota 2', icon: 'swords', color: 'rose' },
+      { id: 'counterstrike', name: 'Counter-Strike', icon: 'crosshair', color: 'emerald' },
+      { id: 'valorant', name: 'VALORANT', icon: 'shield', color: 'red' },
+      { id: 'mobilelegends', name: 'Mobile Legends', icon: 'smartphone', color: 'blue' },
+      { id: 'rocketleague', name: 'Rocket League', icon: 'car', color: 'sky' },
+      { id: 'leagueoflegends', name: 'League of Legends', icon: 'crown', color: 'teal' },
+      { id: 'overwatch', name: 'Overwatch', icon: 'target', color: 'amber' },
+      { id: 'rainbowsix', name: 'Rainbow Six', icon: 'shield-alert', color: 'cyan' },
+      { id: 'pubgmobile', name: 'PUBG Mobile', icon: 'zap', color: 'yellow' },
+      { id: 'apexlegends', name: 'Apex Legends', icon: 'flame', color: 'orange' },
+      { id: 'fighters', name: 'Fighting Games', icon: 'sword', color: 'amber' },
+      { id: 'ageofempires', name: 'Age of Empires', icon: 'castle', color: 'blue' },
+      { id: 'pubg', name: 'PUBG', icon: 'crosshair', color: 'yellow' },
+      { id: 'starcraft2', name: 'StarCraft II', icon: 'cpu', color: 'indigo' },
+      { id: 'brawlstars', name: 'Brawl Stars', icon: 'smile', color: 'blue' },
+      { id: 'honorofkings', name: 'Honor of Kings', icon: 'compass', color: 'teal' },
+      { id: 'callofduty', name: 'Call of Duty', icon: 'crosshair', color: 'blue' },
+      { id: 'marvelrivals', name: 'Marvel Rivals', icon: 'sparkles', color: 'red' },
+      { id: 'fortnite', name: 'Fortnite', icon: 'hammer', color: 'blue' },
+      { id: 'warcraft', name: 'Warcraft', icon: 'axe', color: 'amber' },
+      { id: 'smash', name: 'Smash', icon: 'circle-dot', color: 'red' },
+      { id: 'starcraft', name: 'StarCraft', icon: 'layers', color: 'indigo' },
+      { id: 'worldoftanks', name: 'World of Tanks', icon: 'shield', color: 'red' },
+      { id: 'easportsfc', name: 'EA SPORTS FC', icon: 'activity', color: 'emerald' },
+      { id: 'hearthstone', name: 'Hearthstone', icon: 'sparkle', color: 'amber' },
+      { id: 'heroes', name: 'Heroes', icon: 'compass', color: 'purple' },
+      { id: 'wildrift', name: 'Wild Rift', icon: 'zap', color: 'teal' }
+    ];
+
+    // Audio synthesizer for alerts
+    function playSound(type = 'chime') {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const now = ctx.currentTime;
+
+        if (type === 'chime') {
+          // Double pleasant chime for match start reminder
+          const o1 = ctx.createOscillator();
+          const g1 = ctx.createGain();
+          o1.type = 'sine';
+          o1.frequency.setValueAtTime(587.33, now); // D5
+          o1.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+          g1.gain.setValueAtTime(0.3, now);
+          g1.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+          o1.connect(g1);
+          g1.connect(ctx.destination);
+          o1.start(now);
+          o1.stop(now + 0.5);
+
+          const o2 = ctx.createOscillator();
+          const g2 = ctx.createGain();
+          o2.type = 'sine';
+          o2.frequency.setValueAtTime(880, now + 0.2); // A5
+          o2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.35); // D6
+          g2.gain.setValueAtTime(0.3, now + 0.2);
+          g2.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+          o2.connect(g2);
+          g2.connect(ctx.destination);
+          o2.start(now + 0.2);
+          o2.stop(now + 0.8);
+        } else if (type === 'victory') {
+          // Fanfare tone when a checked match finishes
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.25, now + i * 0.12);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.12 + 0.3);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.12);
+            osc.stop(now + i * 0.12 + 0.3);
+          });
+        }
+      } catch (e) {
+        console.warn('Audio play error', e);
+      }
+    }
+
+    // Toast notifications
+    function showToast(title, message, icon = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'glass-panel p-3.5 rounded-xl shadow-2xl border border-indigo-500/40 text-xs text-slate-100 flex items-start gap-3 pointer-events-auto transform translate-y-2 opacity-0 transition-all duration-300';
+      toast.innerHTML = `
+        <div class="p-1.5 rounded-lg bg-indigo-950 text-indigo-400 mt-0.5">
+          <i data-lucide="${icon}" class="w-4 h-4"></i>
+        </div>
+        <div class="flex-1">
+          <div class="font-bold text-white text-xs">${title}</div>
+          <div class="text-slate-300 text-[11px] mt-0.5">${message}</div>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-slate-500 hover:text-slate-300">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      `;
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    }
+
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('hltv-date-picker').value = state.selectedDate;
+      renderDisciplinesCarousel();
+      fetchMatches();
+      fetchRemovedMatches();
+      startAutoRefresh();
+      startRemindersWatcher();
+      requestNotificationPermission();
+      lucide.createIcons();
+    });
+
+    function requestNotificationPermission() {
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+
+    // --- DISCIPLINES CAROUSEL ---
+    function renderDisciplinesCarousel() {
+      const container = document.getElementById('disciplines-container');
+      const existingAll = document.getElementById('disc-btn-all');
+      container.innerHTML = '';
+      if (existingAll) container.appendChild(existingAll);
+
+      DISCIPLINES_DEF.forEach(d => {
+        const btn = document.createElement('button');
+        btn.id = `disc-btn-${d.id}`;
+        btn.onclick = () => selectDiscipline(d.id);
+        btn.className = `flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800 shrink-0`;
+        btn.innerHTML = `
+          <i data-lucide="${d.icon}" class="w-3.5 h-3.5 text-slate-400"></i>
+          <span>${d.name}</span>
+          <span id="disc-count-${d.id}" class="text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 font-mono font-bold">0</span>
+        `;
+        container.appendChild(btn);
+      });
+      lucide.createIcons();
+    }
+
+    function scrollDisciplines(dir) {
+      const el = document.getElementById('disciplines-container');
+      el.scrollBy({ left: dir * 300, behavior: 'smooth' });
+    }
+
+    function selectDiscipline(id) {
+      state.selectedDiscipline = id;
+      document.querySelectorAll('#disciplines-container button').forEach(btn => {
+        btn.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800 shrink-0';
+      });
+
+      const activeBtn = document.getElementById(`disc-btn-${id}`);
+      if (activeBtn) {
+        activeBtn.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 bg-indigo-600 text-white shadow-md shadow-indigo-900/50 border border-indigo-500 shrink-0';
+      }
+      renderMatches();
+    }
+
+    // --- DATA FETCHING ---
+    async function fetchMatches(isManual = false) {
+      const icon = document.getElementById('refresh-icon');
+      if (icon) icon.classList.add('animate-spin');
+
+      try {
+        const url = `/api/esports/matches?discipline=all&date=${state.selectedDate}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // Check for finished matches among checked
+        checkFinishedMatches(data.matches || []);
+
+        state.matches = data.matches || [];
+        updateDisciplineCounts();
+        renderMatches();
+        document.getElementById('last-updated-text').textContent = `Обновлено: ${new Date().toLocaleTimeString()}`;
+        if (isManual) showToast('Успешно', 'Список матчей обновлен', 'check');
+      } catch (err) {
+        console.error('Fetch error:', err);
+        if (isManual) showToast('Ошибка обновления', err.message, 'alert-circle');
+      } finally {
+        if (icon) icon.classList.remove('animate-spin');
+      }
+    }
+
+    function checkFinishedMatches(newMatches) {
+      const currentMap = new Map(state.matches.map(m => [m.id, m]));
+      newMatches.forEach(nm => {
+        const old = currentMap.get(nm.id);
+        if (old && state.checkedMatchIds.has(nm.id)) {
+          if (old.status !== 'finished' && nm.status === 'finished') {
+            // Match just finished!
+            const title = `${nm.team1_name} ${getTeamScore(nm, 1)}:${getTeamScore(nm, 2)} ${nm.team2_name}`;
+            playSound('victory');
+            showToast('Матч на контроле завершен!', title, 'trophy');
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('Матч завершен!', { body: title, icon: '/favicon.ico' });
+            }
+            state.finishedCheckedMatches.unshift({
+              id: nm.id,
+              title,
+              discipline: nm.discipline_name,
+              time: new Date().toLocaleTimeString(),
+              score: `${getTeamScore(nm, 1)}:${getTeamScore(nm, 2)}`
+            });
+            localStorage.setItem('esports_finished_checked', JSON.stringify(state.finishedCheckedMatches.slice(0, 30)));
+            updateFinishedList();
+          }
+        }
+      });
+    }
+
+    function updateDisciplineCounts() {
+      const counts = { all: state.matches.length };
+      state.matches.forEach(m => {
+        counts[m.discipline] = (counts[m.discipline] || 0) + 1;
+      });
+
+      const allEl = document.getElementById('disc-count-all');
+      if (allEl) allEl.textContent = counts.all;
+      const totalEl = document.getElementById('header-total-count');
+      if (totalEl) totalEl.textContent = counts.all;
+
+      DISCIPLINES_DEF.forEach(d => {
+        const el = document.getElementById(`disc-count-${d.id}`);
+        if (el) el.textContent = counts[d.id] || 0;
+      });
+    }
+
+    // --- RENDERING ---
+    function renderMatches() {
+      const q = (document.getElementById('search-input').value || '').toLowerCase().trim();
+      const filtered = state.matches.filter(m => {
+        // Discipline filter
+        if (state.selectedDiscipline !== 'all' && m.discipline !== state.selectedDiscipline) return false;
+        // Status filter (including draw)
+        if (state.selectedStatus !== 'all') {
+          if (state.selectedStatus === 'draw') {
+            if (!m.is_draw) return false;
+          } else if (m.status !== state.selectedStatus) {
+            return false;
+          }
+        }
+        // Checked filter
+        if (state.checkedOnly && !state.checkedMatchIds.has(m.id)) return false;
+        // Search query
+        if (q) {
+          const matchText = `${m.team1_name} ${m.team1_short} ${m.team2_name} ${m.team2_short} ${m.tournament_name || m.tournament || ''} ${m.discipline_name}`.toLowerCase();
+          if (!matchText.includes(q)) return false;
+        }
+        return true;
+      });
+
+      // Update counters
+      document.getElementById('stats-total').textContent = filtered.length;
+      document.getElementById('stats-live').textContent = filtered.filter(m => m.status === 'live').length;
+      document.getElementById('stats-checked').textContent = state.checkedMatchIds.size;
+      document.getElementById('header-checked-count').textContent = state.checkedMatchIds.size;
+
+      // Status count tabs
+      const dMatches = state.selectedDiscipline === 'all' ? state.matches : state.matches.filter(m => m.discipline === state.selectedDiscipline);
+      document.getElementById('status-cnt-all').textContent = dMatches.length;
+      document.getElementById('status-cnt-live').textContent = dMatches.filter(m => m.status === 'live').length;
+      document.getElementById('status-cnt-upcoming').textContent = dMatches.filter(m => m.status === 'upcoming').length;
+      document.getElementById('status-cnt-finished').textContent = dMatches.filter(m => m.status === 'finished').length;
+      const drawEl = document.getElementById('status-cnt-draw');
+      if (drawEl) drawEl.textContent = dMatches.filter(m => m.is_draw).length;
+
+      const cardsContainer = document.getElementById('cards-container');
+      const tableBody = document.getElementById('table-body');
+      const emptyState = document.getElementById('empty-state');
+
+      if (filtered.length === 0) {
+        cardsContainer.innerHTML = '';
+        tableBody.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      if (state.viewMode === 'cards') {
+        cardsContainer.innerHTML = filtered.map(m => renderMatchCard(m)).join('');
+      } else {
+        tableBody.innerHTML = filtered.map(m => renderMatchTableRow(m)).join('');
+      }
+
+      lucide.createIcons();
+    }
+
+    function formatMatchTime(m) {
+      if (!m.start_time) return 'TBD';
+      try {
+        const d = new Date(m.start_time);
+        if (isNaN(d.getTime())) return m.start_time;
+
+        if (state.timezone === 'local') {
+          return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else {
+          return d.toLocaleTimeString([], { timeZone: state.timezone, hour: '2-digit', minute: '2-digit' });
+        }
+      } catch (e) {
+        return m.start_time;
+      }
+    }
+
+    function getTeamScore(m, teamIdx) {
+      if (teamIdx === 1) {
+        if (m.score1 !== undefined && m.score1 !== null && m.score1 !== '' && m.score1 !== 'undefined') {
+          return m.score1;
+        }
+      } else if (teamIdx === 2) {
+        if (m.score2 !== undefined && m.score2 !== null && m.score2 !== '' && m.score2 !== 'undefined') {
+          return m.score2;
+        }
+      }
+      if (m.score && typeof m.score === 'string' && m.score !== 'undefined' && m.score !== '-') {
+        const parts = m.score.split(/[:\-]/).map(s => s.trim());
+        if (parts.length === 2) {
+          const val = teamIdx === 1 ? parts[0] : parts[1];
+          if (val !== undefined && val !== null && val !== '' && val !== 'undefined') return val;
+        }
+      }
+      return '-';
+    }
+
+    function renderStreamsDropdown(m) {
+      const streams = (m.streams && m.streams.length > 0) ? m.streams : (m.stream_url ? [{ name: 'Стрим', platform: m.stream_platform || 'live', url: m.stream_url }] : []);
+
+      if (streams.length === 0) {
+        return `<span class="text-[10px] text-slate-600 italic">Нет стримов</span>`;
+      }
+
+      return `
+        <div class="flex flex-wrap items-center gap-1.5">
+          ${streams.map(s => {
+            let icon = 'tv';
+            let color = 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700/60';
+            const plat = (s.platform || '').toLowerCase();
+            if (plat === 'twitch') {
+              icon = 'twitch';
+              color = 'bg-purple-950/80 text-purple-300 hover:bg-purple-900 border border-purple-800/60';
+            } else if (plat === 'youtube') {
+              icon = 'youtube';
+              color = 'bg-red-950/80 text-red-300 hover:bg-red-900 border border-red-800/60';
+            } else if (plat === 'kick') {
+              icon = 'play';
+              color = 'bg-emerald-950/80 text-emerald-300 hover:bg-emerald-900 border border-emerald-800/60';
+            } else if (plat === 'facebook') {
+              icon = 'video';
+              color = 'bg-blue-950/80 text-blue-300 hover:bg-blue-900 border border-blue-800/60';
+            } else if (plat === 'hltv') {
+              icon = 'crosshair';
+              color = 'bg-sky-950/80 text-sky-300 hover:bg-sky-900 border border-sky-800/60';
+            } else if (plat === 'afreecatv' || plat === 'bilibili') {
+              icon = 'tv';
+              color = 'bg-indigo-950/80 text-indigo-300 hover:bg-indigo-900 border border-indigo-800/60';
+            }
+            return `
+              <a 
+                href="${s.url}" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold transition shadow-sm ${color}"
+                title="${s.name || s.platform}"
+              >
+                <i data-lucide="${icon}" class="w-3 h-3"></i>
+                <span class="truncate max-w-[120px]">${s.name || s.platform.toUpperCase()}</span>
+              </a>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function renderMatchCard(m) {
+      const isChecked = state.checkedMatchIds.has(m.id);
+      const isLive = m.status === 'live';
+      const hasReminder = state.reminders.some(r => r.matchId === m.id && !r.triggered);
+
+      return `
+        <div class="glass-card rounded-2xl p-4 flex flex-col justify-between transition-all duration-200 ${isChecked ? 'ring-2 ring-indigo-500/80 bg-indigo-950/20' : ''}">
+          
+          <!-- Card Header: Discipline, Format, Time/Status, Control Checkbox -->
+          <div>
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5 mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider bg-slate-900 border border-slate-800 text-indigo-300">
+                  ${m.discipline_name || m.discipline.toUpperCase()}
+                </span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold bg-slate-900/90 text-amber-300 border border-slate-800">
+                  ${m.format || 'BO3'}
+                </span>
+                ${m.is_draw ? `
+                  <span class="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    НИЧЬЯ
+                  </span>
+                ` : ''}
+              </div>
+
+              <div class="flex items-center gap-2">
+                ${isLive ? `
+                  <span class="flex items-center gap-1 text-[11px] font-bold text-rose-400 bg-rose-950/60 border border-rose-800/60 px-2 py-0.5 rounded-full">
+                    <span class="w-2 h-2 rounded-full bg-rose-500 live-dot"></span>
+                    LIVE
+                  </span>
+                ` : `
+                  <span class="text-xs font-mono text-slate-300 flex items-center gap-1">
+                    <i data-lucide="clock" class="w-3 h-3 text-slate-500"></i>
+                    ${formatMatchTime(m)}
+                  </span>
+                `}
+
+                <!-- Reminder Bell Button -->
+                <button 
+                  onclick="openReminderModal('${m.id}')" 
+                  class="p-1 rounded-lg ${hasReminder ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' : 'text-slate-500 hover:text-slate-300'}"
+                  title="Напоминание о матче"
+                >
+                  <i data-lucide="${hasReminder ? 'bell-ring' : 'bell'}" class="w-3.5 h-3.5"></i>
+                </button>
+
+                <!-- Checkbox: "В эфире / Контроль" -->
+                <label class="flex items-center gap-1 cursor-pointer" title="Отметить матч (В эфире / Контроль)">
+                  <input 
+                    type="checkbox" 
+                    ${isChecked ? 'checked' : ''} 
+                    onchange="toggleMatchChecked('${m.id}')"
+                    class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  >
+                </label>
+              </div>
+            </div>
+
+            <!-- Tournament Name & Logo -->
+            <div class="mb-3 text-[11px] text-slate-400 flex items-center gap-1.5 truncate" title="${m.tournament_name || m.tournament || 'Турнир не указан'}">
+              ${m.tournament_logo ? `<img src="${m.tournament_logo}" alt="" class="w-4 h-4 object-contain shrink-0 rounded-sm" onerror="this.style.display='none'">` : `<i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>`}
+              <span class="truncate font-medium text-slate-300">${m.tournament_name || m.tournament || 'Турнир не указан'}</span>
+              ${m.is_draw ? `<span class="ml-auto text-[9px] px-1.5 py-0.2 rounded font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">НИЧЬЯ / DRAW</span>` : ''}
+            </div>
+
+            <!-- Teams & Scores -->
+            <div class="space-y-2 mb-3">
+              <!-- Team 1 -->
+              <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-slate-800/40">
+                <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                  ${m.team1_logo ? `<img src="${m.team1_logo}" alt="" class="w-5 h-5 object-contain shrink-0" onerror="this.style.display='none'">` : ''}
+                  <div class="truncate">
+                    <div class="font-bold text-xs text-white truncate leading-tight">${m.team1_name || 'TBD'}</div>
+                    <div class="text-[10px] text-slate-400 font-mono">[${m.team1_short || m.team1_name || 'TBD'}]</div>
+                  </div>
+                </div>
+                <div class="text-base font-bold font-mono ${isLive ? 'text-amber-400' : 'text-slate-300'} shrink-0 px-2">
+                  ${getTeamScore(m, 1)}
+                </div>
+              </div>
+
+              <!-- Team 2 -->
+              <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-slate-800/40">
+                <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                  ${m.team2_logo ? `<img src="${m.team2_logo}" alt="" class="w-5 h-5 object-contain shrink-0" onerror="this.style.display='none'">` : ''}
+                  <div class="truncate">
+                    <div class="font-bold text-xs text-white truncate leading-tight">${m.team2_name || 'TBD'}</div>
+                    <div class="text-[10px] text-slate-400 font-mono">[${m.team2_short || m.team2_name || 'TBD'}]</div>
+                  </div>
+                </div>
+                <div class="text-base font-bold font-mono ${isLive ? 'text-amber-400' : 'text-slate-300'} shrink-0 px-2">
+                  ${getTeamScore(m, 2)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Footer: Live Streams & Match Link -->
+          <div class="border-t border-slate-800/80 pt-2.5 flex items-center justify-between gap-2">
+            <div class="flex-1 overflow-hidden">
+              ${renderStreamsDropdown(m)}
+            </div>
+
+            ${m.match_url ? `
+              <a 
+                href="${m.match_url}" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="text-[11px] text-slate-400 hover:text-indigo-400 font-medium shrink-0 flex items-center gap-1"
+                title="Открыть страницу матча"
+              >
+                <span>Детали</span>
+                <i data-lucide="external-link" class="w-3 h-3"></i>
+              </a>
+            ` : ''}
+          </div>
+
+        </div>
+      `;
+    }
+
+    function renderMatchTableRow(m) {
+      const isChecked = state.checkedMatchIds.has(m.id);
+      const isLive = m.status === 'live';
+      const hasReminder = state.reminders.some(r => r.matchId === m.id && !r.triggered);
+
+      return `
+        <tr class="hover:bg-slate-800/40 transition ${isChecked ? 'bg-indigo-950/20' : ''}">
+          <!-- Checkbox -->
+          <td class="p-3 text-center">
+            <input 
+              type="checkbox" 
+              ${isChecked ? 'checked' : ''} 
+              onchange="toggleMatchChecked('${m.id}')"
+              class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+            >
+          </td>
+
+          <!-- Discipline -->
+          <td class="p-3 whitespace-nowrap">
+            <span class="text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-slate-900 border border-slate-800 text-indigo-300">
+              ${m.discipline_name || m.discipline.toUpperCase()}
+            </span>
+          </td>
+
+          <!-- Time / Status -->
+          <td class="p-3 whitespace-nowrap">
+            ${isLive ? `
+              <span class="inline-flex items-center gap-1 text-[11px] font-bold text-rose-400 bg-rose-950/60 border border-rose-800/60 px-2 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 live-dot"></span>
+                LIVE
+              </span>
+            ` : `
+              <span class="font-mono text-slate-300">${formatMatchTime(m)}</span>
+            `}
+          </td>
+
+          <!-- Format -->
+          <td class="p-3 whitespace-nowrap">
+            <span class="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold bg-slate-900 text-amber-300 border border-slate-800">
+              ${m.format || 'BO3'}
+            </span>
+          </td>
+
+          <!-- Team 1 (Full + Tag) -->
+          <td class="p-3 text-right">
+            <div class="flex items-center justify-end gap-2">
+              <div>
+                <div class="font-bold text-white leading-tight">${m.team1_name || 'TBD'}</div>
+                <div class="text-[10px] text-slate-400 font-mono">[${m.team1_short || m.team1_name || 'TBD'}]</div>
+              </div>
+              ${m.team1_logo ? `<img src="${m.team1_logo}" alt="" class="w-4 h-4 object-contain" onerror="this.style.display='none'">` : ''}
+            </div>
+          </td>
+
+          <!-- Score -->
+          <td class="p-3 text-center whitespace-nowrap">
+            <div class="flex flex-col items-center">
+              <span class="font-mono font-bold text-sm ${isLive ? 'text-amber-400' : 'text-slate-300'}">
+                ${getTeamScore(m, 1)} : ${getTeamScore(m, 2)}
+              </span>
+              ${m.is_draw ? `<span class="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 mt-0.5">НИЧЬЯ</span>` : ''}
+            </div>
+          </td>
+
+          <!-- Team 2 (Full + Tag) -->
+          <td class="p-3">
+            <div class="flex items-center gap-2">
+              ${m.team2_logo ? `<img src="${m.team2_logo}" alt="" class="w-4 h-4 object-contain" onerror="this.style.display='none'">` : ''}
+              <div>
+                <div class="font-bold text-white leading-tight">${m.team2_name || 'TBD'}</div>
+                <div class="text-[10px] text-slate-400 font-mono">[${m.team2_short || m.team2_name || 'TBD'}]</div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Tournament -->
+          <td class="p-3 truncate max-w-xs text-slate-300" title="${m.tournament_name || m.tournament || ''}">
+            <div class="flex items-center gap-1.5 truncate">
+              ${m.tournament_logo ? `<img src="${m.tournament_logo}" alt="" class="w-4 h-4 object-contain shrink-0 rounded-sm" onerror="this.style.display='none'">` : `<i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>`}
+              <span class="truncate">${m.tournament_name || m.tournament || '-'}</span>
+            </div>
+          </td>
+
+          <!-- Streams -->
+          <td class="p-3 text-center">
+            ${renderStreamsDropdown(m)}
+          </td>
+
+          <!-- Reminder -->
+          <td class="p-3 text-center whitespace-nowrap">
+            <button 
+              onclick="openReminderModal('${m.id}')" 
+              class="p-1.5 rounded-lg ${hasReminder ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' : 'text-slate-500 hover:text-slate-300'}"
+            >
+              <i data-lucide="${hasReminder ? 'bell-ring' : 'bell'}" class="w-3.5 h-3.5"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    }
+
+    // --- CHECKBOX TOGGLE ---
+    function toggleMatchChecked(id) {
+      if (state.checkedMatchIds.has(id)) {
+        state.checkedMatchIds.delete(id);
+      } else {
+        state.checkedMatchIds.add(id);
+      }
+      localStorage.setItem('esports_checked_ids', JSON.stringify(Array.from(state.checkedMatchIds)));
+      renderMatches();
+    }
+
+    function toggleFilterCheckedOnly() {
+      state.checkedOnly = !state.checkedOnly;
+      const btn = document.getElementById('header-checked-btn');
+      if (state.checkedOnly) {
+        btn.classList.add('bg-indigo-600', 'text-white');
+        btn.classList.remove('bg-slate-900', 'text-slate-300');
+      } else {
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('bg-slate-900', 'text-slate-300');
+      }
+      renderMatches();
+    }
+
+    // --- REMINDERS & NOTIFICATIONS SYSTEM ---
+    function openReminderModal(matchId) {
+      const match = state.matches.find(m => m.id === matchId);
+      if (!match) return;
+      state.selectedReminderMatch = match;
+      state.selectedReminderMinutes = 5;
+
+      document.getElementById('modal-match-discipline').textContent = match.discipline_name || match.discipline.toUpperCase();
+      document.getElementById('modal-match-teams').textContent = `${match.team1_name} vs ${match.team2_name}`;
+      document.getElementById('modal-match-time').innerHTML = `<i data-lucide="clock" class="w-3 h-3 text-slate-500"></i><span>Начало: ${formatMatchTime(match)}</span>`;
+
+      document.querySelectorAll('.reminder-opt-btn').forEach(b => b.classList.remove('bg-indigo-600', 'text-white'));
+      document.getElementById('reminder-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeReminderModal() {
+      document.getElementById('reminder-modal').classList.add('hidden');
+      state.selectedReminderMatch = null;
+    }
+
+    function setReminderOption(min) {
+      state.selectedReminderMinutes = min;
+      document.querySelectorAll('.reminder-opt-btn').forEach(b => {
+        b.classList.remove('bg-indigo-600', 'text-white');
+        b.classList.add('bg-slate-900', 'text-slate-300');
+      });
+      event.target.classList.add('bg-indigo-600', 'text-white');
+      event.target.classList.remove('bg-slate-900', 'text-slate-300');
+      document.getElementById('custom-minutes-input').value = '';
+    }
+
+    function confirmReminder() {
+      if (!state.selectedReminderMatch) return;
+      const customVal = parseInt(document.getElementById('custom-minutes-input').value, 10);
+      let min = isNaN(customVal) ? state.selectedReminderMinutes : customVal;
+
+      const m = state.selectedReminderMatch;
+      let startMs = m.start_time ? new Date(m.start_time).getTime() : NaN;
+      if (isNaN(startMs)) {
+        showToast('Предупреждение', 'У матча не указано точное время старта', 'alert-circle');
+        closeReminderModal();
+        return;
+      }
+
+      const alertMs = startMs - (min * 60 * 1000);
+      const reminder = {
+        matchId: m.id,
+        matchTitle: `${m.team1_name} vs ${m.team2_name}`,
+        discipline: m.discipline_name,
+        startTime: m.start_time,
+        alertTime: new Date(alertMs).toISOString(),
+        minutesBefore: min,
+        triggered: false,
+      };
+
+      // Remove existing for this match
+      state.reminders = state.reminders.filter(r => r.matchId !== m.id);
+      state.reminders.push(reminder);
+      localStorage.setItem('esports_reminders', JSON.stringify(state.reminders));
+
+      showToast('Напоминание установлено', `За ${min} мин до начала матча ${reminder.matchTitle}`, 'bell');
+      updateRemindersUI();
+      closeReminderModal();
+      renderMatches();
+    }
+
+    function startRemindersWatcher() {
+      setInterval(() => {
+        const now = Date.now();
+        state.reminders.forEach(r => {
+          if (!r.triggered) {
+            const alertMs = new Date(r.alertTime).getTime();
+            if (now >= alertMs) {
+              r.triggered = true;
+              playSound('chime');
+              const msg = r.minutesBefore === 0 ? `Матч ${r.matchTitle} начинается прямо сейчас!` : `До начала матча ${r.matchTitle} осталось ${r.minutesBefore} мин!`;
+              showToast('Напоминание о матче!', msg, 'bell-ring');
+              if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Скоро начнется матч!', { body: msg, icon: '/favicon.ico' });
+              }
+              localStorage.setItem('esports_reminders', JSON.stringify(state.reminders));
+              updateRemindersUI();
+              renderMatches();
+            }
+          }
+        });
+      }, 5000);
+    }
+
+    function updateRemindersUI() {
+      const active = state.reminders.filter(r => !r.triggered);
+      const badge = document.getElementById('notif-badge-count');
+      if (active.length > 0) {
+        badge.textContent = active.length;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      const list = document.getElementById('reminders-list');
+      if (active.length === 0) {
+        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Нет активных напоминаний</p>`;
+        return;
+      }
+
+      list.innerHTML = active.map(r => `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs">
+          <div class="min-w-0 pr-2 truncate">
+            <div class="font-semibold text-white truncate">${r.matchTitle}</div>
+            <div class="text-[10px] text-slate-400">За ${r.minutesBefore}м • ${new Date(r.alertTime).toLocaleTimeString()}</div>
+          </div>
+          <button onclick="removeReminder('${r.matchId}')" class="text-slate-500 hover:text-rose-400 p-1">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function removeReminder(matchId) {
+      state.reminders = state.reminders.filter(r => r.matchId !== matchId);
+      localStorage.setItem('esports_reminders', JSON.stringify(state.reminders));
+      updateRemindersUI();
+      renderMatches();
+    }
+
+    function clearAllReminders() {
+      state.reminders = [];
+      localStorage.setItem('esports_reminders', JSON.stringify([]));
+      updateRemindersUI();
+      renderMatches();
+    }
+
+    function updateFinishedList() {
+      const list = document.getElementById('finished-checked-list');
+      const count = document.getElementById('finished-checked-count');
+      count.textContent = state.finishedCheckedMatches.length;
+
+      if (state.finishedCheckedMatches.length === 0) {
+        list.innerHTML = `<p class="text-slate-600 text-center py-2">Пока нет завершенных матчей</p>`;
+        return;
+      }
+
+      list.innerHTML = state.finishedCheckedMatches.map(m => `
+        <div class="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 flex items-center justify-between">
+          <div class="truncate">
+            <div class="font-medium text-slate-200 truncate">${m.title}</div>
+            <div class="text-[10px] text-slate-500">${m.discipline} • ${m.time}</div>
+          </div>
+          <span class="font-mono font-bold text-emerald-400 text-xs">${m.score}</span>
+        </div>
+      `).join('');
+    }
+
+    function toggleNotificationsPanel() {
+      const panel = document.getElementById('notifications-panel');
+      panel.classList.toggle('hidden');
+      updateRemindersUI();
+      updateFinishedList();
+    }
+
+    // --- REMOVED MATCHES (CACHE GRACE PERIOD) ---
+    async function fetchRemovedMatches() {
+      try {
+        const res = await fetch('/api/esports/removed-matches');
+        if (!res.ok) return;
+        const data = await res.json();
+        state.removedMatches = data.removed_matches || [];
+        document.getElementById('removed-badge-count').textContent = state.removedMatches.length;
+        renderRemovedMatchesList();
+      } catch (e) {
+        console.error('Fetch removed matches error', e);
+      }
+    }
+
+    function toggleRemovedTab() {
+      state.activeTab = state.activeTab === 'matches' ? 'removed' : 'matches';
+      const matchesSec = document.getElementById('matches-section');
+      const removedSec = document.getElementById('removed-section');
+      const btn = document.getElementById('tab-btn-removed');
+
+      if (state.activeTab === 'removed') {
+        matchesSec.classList.add('hidden');
+        removedSec.classList.remove('hidden');
+        btn.classList.add('bg-rose-950', 'text-rose-300', 'border-rose-800');
+        fetchRemovedMatches();
+      } else {
+        matchesSec.classList.remove('hidden');
+        removedSec.classList.add('hidden');
+        btn.classList.remove('bg-rose-950', 'text-rose-300', 'border-rose-800');
+      }
+    }
+
+    function renderRemovedMatchesList() {
+      const container = document.getElementById('removed-list-container');
+      if (state.removedMatches.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full glass-panel rounded-2xl p-8 text-center text-slate-400">
+            <i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-2 text-emerald-400"></i>
+            <p>Нет удаленных матчей за последние 24 часа</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = state.removedMatches.map(m => `
+        <div class="glass-card rounded-2xl p-4 border border-rose-950/60 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+              <span class="text-[10px] px-2 py-0.5 rounded bg-slate-900 text-rose-400 font-bold uppercase">
+                ${m.discipline || 'ESPORTS'}
+              </span>
+              <span class="text-[10px] text-slate-500 font-mono">
+                ${new Date(m.removed_at).toLocaleTimeString()}
+              </span>
+            </div>
+            <div class="font-bold text-sm text-white mb-1">${m.team1_name} vs ${m.team2_name}</div>
+            <div class="text-xs text-slate-400 mb-2">${m.tournament_name || m.tournament || 'Турнир не указан'}</div>
+            <div class="text-[11px] text-amber-400 bg-amber-950/40 p-1.5 rounded-lg border border-amber-900/40 mb-3">
+              Причина: ${m.reason}
+            </div>
+          </div>
+          <button 
+            onclick="restoreRemovedMatch('${m.match_id}')" 
+            class="w-full py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs transition flex items-center justify-center gap-1.5"
+          >
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Восстановить в активные</span>
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    async function restoreRemovedMatch(matchId) {
+      try {
+        const res = await fetch(`/api/esports/removed-matches/restore/${encodeURIComponent(matchId)}`, { method: 'POST' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        showToast('Восстановлено', 'Матч возвращен в активный список', 'check');
+        await fetchRemovedMatches();
+        await fetchMatches();
+      } catch (e) {
+        showToast('Ошибка восстановления', e.message, 'alert-circle');
+      }
+    }
+
+    async function restoreAllRemovedMatches() {
+      for (const m of state.removedMatches) {
+        await fetch(`/api/esports/removed-matches/restore/${encodeURIComponent(m.match_id)}`, { method: 'POST' });
+      }
+      showToast('Восстановлено', 'Все матчи восстановлены', 'check');
+      await fetchRemovedMatches();
+      await fetchMatches();
+    }
+
+    async function clearRemovedMatches() {
+      if (!confirm('Очистить весь архив удаленных матчей?')) return;
+      try {
+        await fetch('/api/esports/removed-matches/clear', { method: 'POST' });
+        state.removedMatches = [];
+        document.getElementById('removed-badge-count').textContent = '0';
+        renderRemovedMatchesList();
+        showToast('Архив очищен', 'История удаленных матчей удалена', 'trash-2');
+      } catch (e) {
+        showToast('Ошибка очистки', e.message, 'alert-circle');
+      }
+    }
+
+    // --- COOKIE MODAL (HLTV & LIQUIPEDIA) ---
+    function openCookieModal() {
+      document.getElementById('cookie-modal').classList.remove('hidden');
+      loadCookieStatus();
+    }
+    const openHltvModal = openCookieModal;
+
+    function closeCookieModal() {
+      document.getElementById('cookie-modal').classList.add('hidden');
+    }
+    const closeHltvModal = closeCookieModal;
+
+    function switchCookieTab(tab) {
+      const hltvBtn = document.getElementById('cookie-tab-hltv');
+      const lpBtn = document.getElementById('cookie-tab-liquipedia');
+      const hltvContent = document.getElementById('cookie-content-hltv');
+      const lpContent = document.getElementById('cookie-content-liquipedia');
+
+      if (tab === 'hltv') {
+        hltvBtn.className = 'flex-1 py-1.5 rounded-lg font-semibold bg-amber-600 text-white transition';
+        lpBtn.className = 'flex-1 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition';
+        hltvContent.classList.remove('hidden');
+        lpContent.classList.add('hidden');
+      } else {
+        lpBtn.className = 'flex-1 py-1.5 rounded-lg font-semibold bg-indigo-600 text-white transition';
+        hltvBtn.className = 'flex-1 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition';
+        lpContent.classList.remove('hidden');
+        hltvContent.classList.add('hidden');
+      }
+    }
+
+    async function loadCookieStatus() {
+      try {
+        const resHltv = await fetch('/api/hltv/config');
+        const dataHltv = await resHltv.json();
+        document.getElementById('hltv-cookie-status').textContent = dataHltv.cookie_set
+          ? `Установлено ${dataHltv.cookies_count} cookies (${dataHltv.cookie_names.join(', ')})`
+          : 'Cookies не установлены';
+      } catch (e) {
+        document.getElementById('hltv-cookie-status').textContent = 'Статус: Ошибка проверки';
+      }
+
+      try {
+        const resLp = await fetch('/api/liquipedia/config');
+        const dataLp = await resLp.json();
+        document.getElementById('liquipedia-cookie-status').textContent = dataLp.cookie_set
+          ? `Установлено ${dataLp.cookies_count} cookies (${dataLp.cookie_names.join(', ')})`
+          : 'Cookies не установлены';
+      } catch (e) {
+        document.getElementById('liquipedia-cookie-status').textContent = 'Статус: Ошибка проверки';
+      }
+    }
+
+    async function saveHltvCookie() {
+      const val = document.getElementById('hltv-cookie-input').value.trim();
+      if (!val) {
+        alert('Пожалуйста, вставьте JSON cookies или строку заголовка Cookie');
+        return;
+      }
+      try {
+        const res = await fetch('/api/hltv/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ raw_cookie: val })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          showToast('HLTV Cookies сохранены', `Сохранено ${data.cookies_count} cookies`, 'check');
+          closeCookieModal();
+          fetchMatches(true);
+        } else {
+          showToast('Ошибка', data.message || 'Не удалось обновить cookie', 'alert-circle');
+        }
+      } catch (e) {
+        showToast('Ошибка сети', e.message, 'alert-circle');
+      }
+    }
+
+    async function saveLiquipediaCookie() {
+      const val = document.getElementById('liquipedia-cookie-input').value.trim();
+      if (!val) {
+        alert('Пожалуйста, вставьте JSON cookies или строку заголовка Cookie');
+        return;
+      }
+      try {
+        const res = await fetch('/api/liquipedia/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ raw_cookie: val })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          showToast('Liquipedia Cookies сохранены', `Сохранено ${data.cookies_count} cookies`, 'check');
+          closeCookieModal();
+          fetchMatches(true);
+        } else {
+          showToast('Ошибка', data.message || 'Не удалось обновить cookie', 'alert-circle');
+        }
+      } catch (e) {
+        showToast('Ошибка сети', e.message, 'alert-circle');
+      }
+    }
+
+    // --- TOOLBAR CONTROLS ---
+    function setStatusFilter(st) {
+      state.selectedStatus = st;
+      ['all', 'live', 'upcoming', 'finished', 'draw'].forEach(s => {
+        const b = document.getElementById(`status-btn-${s}`);
+        if (!b) return;
+        if (s === st) {
+          b.className = 'px-2.5 py-1 rounded-lg font-medium bg-indigo-600 text-white';
+        } else {
+          b.className = 'px-2.5 py-1 rounded-lg font-medium text-slate-400 hover:text-white';
+        }
+      });
+      renderMatches();
+    }
+
+    function onDateChanged() {
+      const val = document.getElementById('hltv-date-picker').value;
+      if (val) {
+        state.selectedDate = val;
+        fetchMatches(true);
+      }
+    }
+
+    function setDateOffset(offset) {
+      const d = new Date();
+      d.setDate(d.getDate() + offset);
+      state.selectedDate = d.toISOString().split('T')[0];
+      document.getElementById('hltv-date-picker').value = state.selectedDate;
+      fetchMatches(true);
+    }
+
+    function changeTimezone() {
+      state.timezone = document.getElementById('tz-select').value;
+      renderMatches();
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      const cardsBtn = document.getElementById('view-btn-cards');
+      const tableBtn = document.getElementById('view-btn-table');
+      const cardsContainer = document.getElementById('cards-container');
+      const tableContainer = document.getElementById('table-container');
+
+      if (mode === 'cards') {
+        cardsBtn.className = 'p-1 rounded-lg bg-indigo-600 text-white';
+        tableBtn.className = 'p-1 rounded-lg text-slate-400 hover:text-white';
+        cardsContainer.classList.remove('hidden');
+        tableContainer.classList.add('hidden');
+      } else {
+        tableBtn.className = 'p-1 rounded-lg bg-indigo-600 text-white';
+        cardsBtn.className = 'p-1 rounded-lg text-slate-400 hover:text-white';
+        tableContainer.classList.remove('hidden');
+        cardsContainer.classList.add('hidden');
+      }
+      renderMatches();
+    }
+
+    function clearSearch() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('search-clear-btn').classList.add('hidden');
+      renderMatches();
+    }
+
+    function changeRefreshInterval() {
+      const sec = parseInt(document.getElementById('refresh-interval-select').value, 10);
+      state.refreshIntervalSec = sec;
+      startAutoRefresh();
+    }
+
+    function startAutoRefresh() {
+      if (state.refreshTimer) clearInterval(state.refreshTimer);
+      if (state.refreshIntervalSec > 0) {
+        state.refreshTimer = setInterval(() => {
+          fetchMatches();
+          fetchRemovedMatches();
+        }, state.refreshIntervalSec * 1000);
+      }
+    }
+  </script>
+</body>
+</html>

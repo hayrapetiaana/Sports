@@ -1,0 +1,65 @@
+{
+  "id": 716002,
+  "start_date": "2026-09-19T02:15:00Z",
+  "status": 1,
+  "tournament": {
+    "id": 77762,
+    "name_ru": "Турнир A4. Лига 350-400",
+    "name_en": "Tournament A4. League 350-400",
+    "type_id": null
+  },
+  "stage": {
+    "id": 21,
+    "name_ru": "Финал",
+    "name_en": "Final"
+  },
+  "side_one": {
+    "id": 804,
+    "is_tba": false,
+    "side_type_id": 2,
+    "player": {
+      "avatar": null,
+      "photo": null,
+      "id": 314,
+      "first_name_ru": "не",
+      "first_name_en": null,
+      "surname_ru": "Команда",
+      "surname_en": "TBA",
+      "patronymic_ru": "определена",
+      "patronymic_en": null,
+      "short_name_ru": "Команда н. о.",
+      "short_name_en": "TBA"
+    },
+    "team": null,
+    "couple": null
+  },
+  "side_two": {
+    "id": 804,
+    "is_tba": false,
+    "side_type_id": 2,
+    "player": {
+      "avatar": null,
+      "photo": null,
+      "id": 314,
+      "first_name_ru": "не",
+      "first_name_en": null,
+      "surname_ru": "Команда",
+      "surname_en": "TBA",
+      "patronymic_ru": "определена",
+      "patronymic_en": null,
+      "short_name_ru": "Команда н. о.",
+      "short_name_en": "TBA"
+    },
+    "team": null,
+    "couple": null
+  },
+  "results": {
+    "duration": null,
+    "score_one": null,
+    "score_two": null,
+    "period_scores": [],
+    "overtime_scores": [],
+    "shootout_scores": [],
+    "finish_type": 1
+  }
+}
